@@ -1,0 +1,24 @@
+#include "dkli.dkh"
+#!
+
+module "crudl.dkl"
+{
+    
+    @table_name="mini_venta"
+
+    delete_mini_venta::&db,table_name,sys_pk
+    {
+        new p { @"sys_pk":sys_pk }
+        do dbr.delete(db,"mini_dventa","ref_mini_venta=@sys_pk",p)
+        do dbr.delete(db,table_name,"sys_pk=@sys_pk",p)
+    }
+
+    using @childs
+    {
+        @"detalle*":entity.child("mini_dventa","ref_mini_venta","
+            select * from mini_dventa where ref_mini_venta=@sys_pk;
+        ")
+    }
+
+    point @custom_delete to delete_mini_venta
+}

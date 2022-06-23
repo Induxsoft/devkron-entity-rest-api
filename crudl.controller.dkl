@@ -1,0 +1,81 @@
+﻿#include "dkli.dkh"
+#!
+
+module "crudl.dkl"
+{
+	#include "functions.dkh"
+	#include "serialize.dkh"
+	#include "dbr.dkh"
+
+	#include "entity.dk"
+
+	http_response::status, content
+	{
+		@http_context<"response/headers/status">:status
+		@http_context<"response/headers/content-type">:"application/json;charset=utf-8"
+    	@http_context<"response/output">:"text"
+		@http_context<"response/text">:content
+	}
+
+	@crud.controller.path="web/api.erp.test"
+	
+	qname=@@(@http_context,"request/get/_connection")+"@"+@@(@http_context,"request/get/_app_group")
+	model_entity = path.concat(@crud.controller.path, @@(@http_context,"request/get/_entities_type")+".dk")
+	
+	if file.exists(model_entity) { include model_entity }
+
+	ref db=dbr.login(qname,"ADMIN","")
+	
+    ref params = @@(@http_context,"&request/get")
+	ref data = from.json(field.dstr(@http_context,"request/post_string","{}"))
+
+	http_status=200
+	http_response=""
+
+	switch toupper(@@(@http_context,"request/headers/request_method"))
+	{
+		case "GET"
+		{
+			if @@(params,"_entity_id") != ""
+			{
+				that @read(db,params)->*obj
+				http_response=to.json(obj)
+			}
+			else
+			{
+				that @list(db,params)->*obj
+				http_response=to.json(obj)
+			}
+		}
+		case "POST"
+		{
+			that @create(db,params,data)->*obj
+			http_response=to.json(obj)
+		}
+		case "PUT"
+		{
+			that @update(db,params,data)->*obj
+			http_response=to.json(obj)
+		}
+		case "PATCH"
+		{
+			that @update(db,params,data)->*obj
+			http_response=to.json(obj)
+		}
+		case "DELETE"
+		{
+			http_status=204
+			that @delete(db,params)
+		}
+	}
+
+	exception
+	{
+		if last_error_code()>=400 { http_status=last_error_code() }
+		else { http_status=500 }
+		http_response=last_error()
+	}
+
+	do http_response(http_status, http_response)
+
+}
