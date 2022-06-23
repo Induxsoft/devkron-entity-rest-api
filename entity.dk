@@ -15,6 +15,9 @@ module "Entity.dk"
     @update_fields="*"
     @create_fields="*"
 
+    @create_exclude_fields=""
+    @update_exclude_fields=""
+
     @update_alias_fields=""
     @create_alias_fields=""
 
@@ -32,6 +35,19 @@ module "Entity.dk"
         return ranychars(id,";'`"+'"',"_") 
     }
 
+    entity.remove_fields::&data, &fields_list
+    {
+        if isnull(fields_list) || isnull(data) { return }
+
+        for i=0;i<@count(fields_list)
+        {
+            if field.exist(data,trim(list.str(fields_list,i)))
+            {
+                do field.remove(data,trim(list.str(fields_list,i)))
+            }
+        }
+    }
+
     entity.create::&db, &params, &data
     {
         if @table_name=="" { @table_name=entity.safe_id(@@(params,"_entities_type")) }
@@ -40,16 +56,16 @@ module "Entity.dk"
         //Limpiar create_data de los campos que sean 'childs'
         if not(isnull(@childs))
         {
-            ref fields=list.create_from_fields(@childs)
-            for i=0;i<@count(fields)
-            {
-                if field.exist(create_data,list.str(fields,i))
-                {
-                    do field.remove(create_data,list.str(fields,i))
-                }
-            }
+            do entity.remove_fields(create_data, list.create_from_fields(@childs))
+        }
+
+        //Excluir campos que no deben afectarse
+        if @create_exclude_fields!=""
+        {
+            do entity.remove_fields(create_data, split(@create_exclude_fields,","))
         }
         //////////////////////////////////////////////////////
+
 
         if @use_transaction { do dbr.begin(db) }
 
@@ -111,17 +127,16 @@ module "Entity.dk"
         if @table_name=="" { @table_name=entity.safe_id(@@(params,"_entities_type")) }
         ref update_data=record.copyex(data,@null,@update_fields,",",@update_alias_fields,",")
 
-        //Limpiar update_data de los campos que sean 'childs'
+        //Limpiar create_data de los campos que sean 'childs'
         if not(isnull(@childs))
         {
-            ref fields=list.create_from_fields(@childs)
-            for i=0;i<@count(fields)
-            {
-                if field.exist(update_data,list.str(fields,i))
-                {
-                    do field.remove(update_data,list.str(fields,i))
-                }
-            }
+            do entity.remove_fields(update_data, list.create_from_fields(@childs))
+        }
+
+        //Excluir campos que no deben afectarse
+        if @create_exclude_fields!=""
+        {
+            do entity.remove_fields(update_data, split(@update_exclude_fields,","))
         }
         //////////////////////////////////////////////////////
 
