@@ -9,6 +9,8 @@ module "crudl.dkl"
 
 	#include "entity.dk"
 
+	@crud.controller.path="web/api.erp.test" //Ubicación de los archivos de modelo de entidades
+
 	http_response::status, content
 	{
 		@http_context<"response/headers/status">:status
@@ -17,7 +19,6 @@ module "crudl.dkl"
 		@http_context<"response/text">:content
 	}
 
-	@crud.controller.path="web/api.erp.test"
 	
 	qname=@@(@http_context,"request/get/_connection")+"@"+@@(@http_context,"request/get/_app_group")
 	model_entity = path.concat(@crud.controller.path, @@(@http_context,"request/get/_entities_type")+".dk")
@@ -38,32 +39,44 @@ module "crudl.dkl"
 		{
 			if @@(params,"_entity_id") != ""
 			{
+				if isnull(@read) { do rise_error(404,"Operación no admitida") }
+
 				that @read(db,params)->*obj
 				http_response=to.json(obj)
 			}
 			else
 			{
+				if isnull(@list) { do rise_error(404,"Operación no admitida") }
+
 				that @list(db,params)->*obj
 				http_response=to.json(obj)
 			}
 		}
 		case "POST"
 		{
+			if isnull(@create) { do rise_error(404,"Operación no admitida") }
+
 			that @create(db,params,data)->*obj
 			http_response=to.json(obj)
 		}
 		case "PUT"
 		{
+			if isnull(@update) { do rise_error(404,"Operación no admitida") }
+
 			that @update(db,params,data)->*obj
 			http_response=to.json(obj)
 		}
 		case "PATCH"
 		{
+			if isnull(@update) { do rise_error(404,"Operación no admitida") }
+
 			that @update(db,params,data)->*obj
 			http_response=to.json(obj)
 		}
 		case "DELETE"
 		{
+			if isnull(@delete) { do rise_error(404,"Operación no admitida") }
+
 			http_status=204
 			that @delete(db,params)
 		}
