@@ -1,0 +1,43 @@
+#include "dkli.dkh"
+#!
+
+module "cajero.dk"
+{
+    cajero.read::&db,&params
+    {
+        ref cajero=entity.read(db,params)
+        cajero<"domicilio*">:dbr.rec(db,"select codpos,colonia,direccion,notas,telefonos,sys_pk,iciudad from domicilio where sys_pk=@domicilio1",cajero)
+        cajero<"ciudad*">:dbr.rec(db,"select codigo,codigotel,nombre,sys_pk,Estado from ciudad where sys_pk=@iciudad",@@(cajero,"&domicilio"))
+        cajero<"estado*">:dbr.rec(db,"select codigo,nombre,IPais from edoprov where sys_pk=@estado",@@(cajero,"&ciudad"))
+        cajero<"pais*">:dbr.rec(db,"select codigo,codigotel,nombre from pais where sys_pk=@IPais",@@(cajero,"&estado"))
+        return  cajero
+    }
+    cajero.create::&db,&params,&data
+    {
+        @use_transaction=@false
+
+        do dbr.begin(db)
+
+        if not(isnull(@@(data,"&domicilio")))
+        {
+            ref domicilio=dbr.save(db,"domicilio",@@(data,"&domicilio"))
+            data<"domicilio1">:@@(domicilio,"sys_pk")
+            do field.remove(data,"domicilio")
+        }
+        if not(isnull(@@(data,"&ciudad"))){do field.remove(data,"ciudad")}
+        if not(isnull(@@(data,"&estado"))){do field.remove(data,"estado")}
+        if not(isnull(@@(data,"&pais"))){do field.remove(data,"pais")}
+        ref res= entity.create(db,params,data)
+
+        do dbr.commit(db)
+        return res
+        exception
+        {
+            if dbr.in_transaction(db) { do dbr.rollback(db) }
+            do rise_error(500,last_error())
+        }
+
+    }
+    point @read to cajero.read
+    point @create to cajero.create
+}
