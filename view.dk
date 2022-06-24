@@ -1,0 +1,112 @@
+﻿#include "dkli.dkh"
+#!
+
+module "view.dkl"
+{
+	#!
+	view_controller::operation, &params
+	{
+		expected_html=contains(tolower(replace(@@(@http_context,"request/headers/accept")," ","")),"text/html")
+
+		if expected_html
+		{
+			point @fail_view to html_error_view
+
+			switch operation
+			{
+				case "list" { point @success_view to html_list_view }
+				case "read" { point @success_view to html_form_view }
+				case "create" 
+				{ 
+					point @success_view to http_redirect 
+					point @fail_view to html_form_view
+				}
+				case "update" 
+				{ 
+					point @success_view to http_redirect 
+					point @fail_view to html_form_view
+				}
+				case "delete" 
+				{ 
+					point @success_view to http_redirect 
+					point @fail_view to html_form_view
+				}
+			}
+		}
+	}
+
+	#!
+	http_redirect :: &params, &input_data, &output_data, &error_info
+	{
+		rel_path=ifstr(@@(params,"_entity_id")!="","../","./")
+		@http_context<"response/headers/Location">:rel_path+"?_select="+@@(params,"_entity_id")
+	}
+
+	#!
+	html_error_view:: &params, &input_data, &output_data, &error_info
+	{
+		##
+		div
+		{
+			h1{$"Error view"}
+			$"#<to.json(error_info)>"
+		}
+		##
+	}
+
+	#!
+	html_list_view:: &params, &input_data, &output_data, &error_info
+	{
+		##
+		div
+		{
+			h1{$"List view"}
+			$"#<to.json(output_data)>"
+		}
+		##
+	}
+
+	#!
+	html_form_view:: &params, &input_data, &output_data, &error_info
+	{
+		##
+		div
+		{
+			h1{$"Form view"}
+			$"#<to.json(output_data)>"
+		}
+		##
+	}
+
+	#!
+	json_view:: &params, &input_data, &output_data, &error_info
+	{
+		@http_context<"response/headers/content-type">:"application/json;charset=utf-8"
+    	@http_context<"response/output">:"text"
+
+		if isnull(error_info)
+		{
+			@http_context<"response/text">:to.json(output_data)
+		}
+		else
+		{
+			@http_context<"response/text">:to.json(error_info)
+		}
+	}
+
+	#!
+	set_http_status:: status
+	{
+		@http_context<"response/headers/status">:status
+	}
+
+	#!
+	ref @success_view=@null
+	ref @fail_view=@null
+	ref @view_controller=@null
+
+	point @success_view to json_view
+	point @fail_view to json_view
+	point @view_controller to view_controller
+
+}

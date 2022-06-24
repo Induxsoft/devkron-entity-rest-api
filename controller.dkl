@@ -1,0 +1,96 @@
+﻿#include "dkli.dkh"
+#!
+
+module "crudl.dkl"
+{
+	#include "functions.dkh"
+	#include "serialize.dkh"
+	#include "dbr.dkh"
+
+	#include "entity.dk"
+	#include "view.dk"
+
+	#!
+	@crud_path="web/api.erp.test" //Ubicación de los archivos de modelo de entidades
+	@auto_crud=@true
+
+	@entity_path=path.concat(@crud_models_path, @@(@http_context,"request/get/_entities_type"))
+	qname=@@(@http_context,"request/get/_connection")+"@"+@@(@http_context,"request/get/_app_group")
+
+	model_entity = path.concat(@entity_path,"model.dk")
+	controller_entity = path.concat(@entity_path,"controller.dk")
+	
+	if file.exists(model_entity) { include model_entity }
+	else { if not(@auto_crud) { do rise_error(404,"Entidad no definida") }}
+
+	if file.exists(controller_entity) { include controller_entity }
+
+	ref db=dbr.login(qname,"ADMIN","")
+	
+    ref params = @@(@http_context,"&request/get")
+	ref input_data = from.json(field.dstr(@http_context,"request/post_string","{}"))
+	ref output_data=@null
+
+	operation=""
+
+	switch toupper(@@(@http_context,"request/headers/request_method"))
+	{
+		case "GET"
+		{
+			if @@(params,"_entity_id") != "" { operation="list" }
+			else { operation="read" }
+		}
+		case "POST" { operation="create" }
+		case "PUT"  { operation="update" }
+		case "PATCH"{ operation="update" }
+		case "DELETE" { operation="delete" }
+	}
+
+	that @view_controller(params,operation)
+
+	switch operation
+	{
+		case "read"
+		{
+			if isnull(@read) { do rise_error(404,"Operación no admitida") }
+			that @read(db,params)->*output_data
+		}
+		case "list"
+		{
+			if isnull(@list) { do rise_error(404,"Operación no admitida") }
+			that @list(db,params)->*output_data
+		}
+		case "create"
+		{
+			if isnull(@create) { do rise_error(404,"Operación no admitida") }
+			that @create(db,params,input_data)->*output_data
+		}
+		case "update"
+		{
+			if isnull(@update) { do rise_error(404,"Operación no admitida") }
+			that @update(db,params,input_data)->*output_data
+		}
+		case "delete"
+		{
+			if isnull(@delete) { do rise_error(404,"Operación no admitida") }
+			set_http_status(204)
+			that @delete(db,params)
+		}
+	}
+
+	that @success_view(params, input_data, output_data, @null)
+
+	exception
+	{
+		if last_error_code()>=400 { do set_http_status(last_error_code()) }
+		else { do set_http_status(500) }
+
+		new error_info
+		{
+			@"message":last_error()
+		}
+
+		that @fail_view(params, input_data, output_data, error_info)
+	}
+
+}
