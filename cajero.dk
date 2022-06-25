@@ -6,10 +6,10 @@ module "cajero.dk"
     cajero.read::&db,&params
     {
         ref cajero=entity.read(db,params)
-        cajero<"domicilio*">:dbr.rec(db,"select codpos,colonia,direccion,notas,telefonos,sys_pk,iciudad from domicilio where sys_pk=@domicilio1",cajero)
-        cajero<"ciudad*">:dbr.rec(db,"select codigo,codigotel,nombre,sys_pk,Estado from ciudad where sys_pk=@iciudad",@@(cajero,"&domicilio"))
-        cajero<"estado*">:dbr.rec(db,"select codigo,nombre,IPais from edoprov where sys_pk=@estado",@@(cajero,"&ciudad"))
-        cajero<"pais*">:dbr.rec(db,"select codigo,codigotel,nombre from pais where sys_pk=@IPais",@@(cajero,"&estado"))
+        cajero<"domicilio*">:dbr.rec(db,"select codpos,colonia,direccion,notas,telefonos,sys_pk,sys_recver,iciudad from domicilio where sys_pk=@domicilio1",cajero)
+        cajero<"ciudad*">:dbr.rec(db,"select codigo,codigotel,nombre,sys_pk,sys_recver,Estado from ciudad where sys_pk=@iciudad",@@(cajero,"&domicilio"))
+        cajero<"estado*">:dbr.rec(db,"select codigo,nombre,IPais,sys_pk,sys_recver from edoprov where sys_pk=@estado",@@(cajero,"&ciudad"))
+        cajero<"pais*">:dbr.rec(db,"select codigo,codigotel,nombre,sys_pk,sys_recver from pais where sys_pk=@IPais",@@(cajero,"&estado"))
         return  cajero
     }
     cajero.create::&db,&params,&data
@@ -36,8 +36,17 @@ module "cajero.dk"
             if dbr.in_transaction(db) { do dbr.rollback(db) }
             do rise_error(500,last_error())
         }
-
+    }
+    cajero.delete::&db,table_name,sys_pk
+    {
+        ref params=record.create()
+        params<"_entity_id">:sys_pk
+        params<"_entities_type">:table_name
+        ref cajero=entity.read(db,params)
+        do dbr.delete(db,table_name,"sys_pk=@_entity_id",params)
+        do dbr.delete(db,"domicilio","sys_pk=@domicilio1",cajero)
     }
     point @read to cajero.read
     point @create to cajero.create
+    point @custom_delete to cajero.delete
 }

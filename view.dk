@@ -6,7 +6,7 @@ module "view.dkl"
 	#!
 	view_controller::operation, &params
 	{
-		expected_html=contains(tolower(replace(@@(@http_context,"request/headers/accept")," ","")),"text/html")
+		expected_html=contains(tolower(replace(@@(@http_context,"request/headers/HTTP_ACCEPT")," ","")),"text/html")
 
 		if expected_html
 		{
@@ -52,6 +52,8 @@ module "view.dkl"
 			$"#<to.json(error_info)>"
 		}
 		##
+
+		do flush_stdout()
 	}
 
 	#!
@@ -64,6 +66,17 @@ module "view.dkl"
 			$"#<to.json(output_data)>"
 		}
 		##
+
+		do flush_stdout()
+	}
+
+	#!
+	flush_stdout::
+	{
+		@http_context<"response/headers/content-type">:"text/html;charset=utf-8"
+    	@http_context<"response/output">:"text"
+
+		@http_context<"response/text">:  fxml()
 	}
 
 	#!
@@ -76,6 +89,8 @@ module "view.dkl"
 			$"#<to.json(output_data)>"
 		}
 		##
+
+		do flush_stdout()
 	}
 
 	#!

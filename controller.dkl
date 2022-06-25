@@ -14,7 +14,7 @@ module "crudl.dkl"
 	@crud_path="web/api.erp.test" //Ubicación de los archivos de modelo de entidades
 	@auto_crud=@true
 
-	@entity_path=path.concat(@crud_models_path, @@(@http_context,"request/get/_entities_type"))
+	@entity_path=path.concat(@crud_path, @@(@http_context,"request/get/_entities_type"))
 	qname=@@(@http_context,"request/get/_connection")+"@"+@@(@http_context,"request/get/_app_group")
 
 	model_entity = path.concat(@entity_path,"model.dk")
@@ -37,8 +37,8 @@ module "crudl.dkl"
 	{
 		case "GET"
 		{
-			if @@(params,"_entity_id") != "" { operation="list" }
-			else { operation="read" }
+			if @@(params,"_entity_id") != "" { operation="read" }
+			else { operation="list" }
 		}
 		case "POST" { operation="create" }
 		case "PUT"  { operation="update" }
@@ -46,7 +46,7 @@ module "crudl.dkl"
 		case "DELETE" { operation="delete" }
 	}
 
-	that @view_controller(params,operation)
+	that @view_controller(operation, params)
 
 	switch operation
 	{
@@ -73,13 +73,14 @@ module "crudl.dkl"
 		case "delete"
 		{
 			if isnull(@delete) { do rise_error(404,"Operación no admitida") }
-			set_http_status(204)
+			do set_http_status(204)
 			that @delete(db,params)
 		}
 	}
 
 	that @success_view(params, input_data, output_data, @null)
 
+	
 	exception
 	{
 		if last_error_code()>=400 { do set_http_status(last_error_code()) }
@@ -92,5 +93,5 @@ module "crudl.dkl"
 
 		that @fail_view(params, input_data, output_data, error_info)
 	}
-
+	
 }
