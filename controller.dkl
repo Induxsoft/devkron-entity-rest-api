@@ -38,6 +38,8 @@ module "crudl.dkl"
 	@form_view="form.dk"
 	@error_view="error.dk"
 
+	@entity_id_blank="_new"
+
 	@dkl_view_ext=".dk"
 	@websencia_ext=".jsnwm"
 
@@ -94,8 +96,16 @@ module "crudl.dkl"
 	{
 		case "read"
 		{
-			if isnull(@read) { do rise_error(404,"Operación no admitida") }
-			that @read(db,params)->*output_data
+			if @@(params,"_entity_id")==@entity_id_blank
+			{
+				if isnull(@blank) { do rise_error(404,"Operación no admitida (nuevo)") }
+				that @blank ->* output_data
+			}
+			else
+			{
+				if isnull(@read) { do rise_error(404,"Operación no admitida") }
+				that @read(db,params)->*output_data
+			}
 		}
 		case "list"
 		{

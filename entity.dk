@@ -100,6 +100,11 @@ module "Entity.dk"
         return obj
     }
 
+    entity.blank::
+    {
+        return record.create()
+    }
+
     entity.read:: &db, &params
     {
 
@@ -333,4 +338,5 @@ module "Entity.dk"
 	point @update 	to entity.update
 	point @delete 	to entity.delete
 	point @list		to entity.list
+    point @blank	to entity.blank
 }
