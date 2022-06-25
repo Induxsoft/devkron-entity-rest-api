@@ -3,6 +3,13 @@
 
 module "almacen.dk"
 {
+    @read_query="select 
+        sys_pk, sys_guid, sys_recver, sys_timestamp, sys_dtcreated, sys_deleted, 
+        codigo, 
+        descripcion, email,telefonos,domicilio1
+        from almacen where #<@keyfield>=@_entity_id limit 1;"
+
+
 	almacen.read::&db,&params
     {
         ref almacen=entity.read(db,params)

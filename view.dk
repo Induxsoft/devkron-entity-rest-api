@@ -13,11 +13,11 @@ module "view.dkl"
 			vn=list.str(split(file,"$"),1)
 
 			if file.extension(fn)=="" { fn=fn+@websencia_ext }
-			if file.exist(path.concat(@entity_path,fn))
+			if file.exists(path.concat(@entity_path,fn))
 			{
 				return path.concat(@entity_path,fn)+"$"+vn
 			}
-			if file.exist(path.concat(@crud_path,fn))
+			if file.exists(path.concat(@crud_path,fn))
 			{
 				return path.concat(@crud_path,fn)+"$"+vn
 			}
@@ -26,16 +26,18 @@ module "view.dkl"
 		}
 		
 		if file.extension(file)=="" { file=file+@dkl_view_ext }
-		if file.exist(path.concat(@entity_path,file))
+		if file.exists(path.concat(@entity_path,file))
 		{
 			return path.concat(@entity_path,file)
 		}
-		if file.exist(path.concat(@crud_path,file))
+		if file.exists(path.concat(@crud_path,file))
 		{
 			return path.concat(@crud_path,file)
 		}
 
 		return ""
+
+		exception { return last_error()}
 	}
 	
 	#!
@@ -69,30 +71,36 @@ module "view.dkl"
 	#!
 	redirect :: &params, &input_data, &output_data, &error_info
 	{
-		rel_path=ifstr(@@(params,"_entity_id")!="","../","./")
-		@http_context<"response/headers/Location">:rel_path+"?_select="+@@(params,"_entity_id")
+		uri=@@(@http_context,"request/headers/REQUEST_URI")
+		if @@(params,"_entity_id")!="" { uri=dir.name(uri) }
+
+		uri=replace(path.concat(uri,"?_select="+@@(output_data,@@(params,"_key"))+"&_key="+@@(params,"_key")),"\\","/")
+
+		@http_context<"response/headers/Location">:uri
 	}
 
 	render_view::file,&params, &input_data, &output_data, &error_info
 	{
 		html=""
-		ref context=@null
+		ref db=@null
+		if isset("@database") { ref db=@database }
 
-		if not(isnull(error_info)) 
+		new context
 		{
-			ref context=input_data
-			if isnull(context){ ref context=record.create() }
-			context<"_error*">:error_info
+			@".*": output_data
+			@"output*": output_data
+			@"input*": input_data
+			@"parameters*": params
+			@"error*": error_info
+			@"database*": db
+			@"http*":@http_context
 		}
-		else
+
+		if not(isnull(error_info))
 		{
-			ref context=output_data
-			using context
-			{
-				@"_parameters*":params
-				@"_input*":input_data
-			}
+			if not(isnull(input_data)) { context<".*">:input_data }
 		}
+
 
 		if contains(file,"$")
 		{
@@ -101,7 +109,7 @@ module "view.dkl"
 			context<"_websencia_file">:fn
 			context<"_websencia_view">:vn
 
-			html=runscript(path.concat(@crud_path,"websencia.dk"),context,"crud_context")
+			html=runscript(path.concat(@crud_path,"websencia.dk"),"crud_context",context)
 		}
 		else
 		{
@@ -112,7 +120,7 @@ module "view.dkl"
 			{
 				case ".dk"
 				{
-					html=runscript(file,context,"crud_context")
+					html=runscript(file,"crud_context",context)
 				}
 				default
 				{

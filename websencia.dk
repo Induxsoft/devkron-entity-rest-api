@@ -1,4 +1,5 @@
 ﻿#include "dkli.dkh"
+#set "meta-xml-declaration" ""
 #!
 program "Websencia Render"
 {
@@ -9,11 +10,16 @@ program "Websencia Render"
     #include "websencia.dkl"
 
     #!
+    build_view::
+    {
+        ref views=websencia.loadViewModels(@@(@crud_context,"$_websencia_file"))
+        ref view=@@(views, "&views/"+@@(@crud_context,"$_websencia_view"))
+        return fxml(websencia.renderView(@crud_context, view))
+    }
 
-    do @context.begin(@crud_context)
-    ref views=websencia.loadViewModels(@("$_websencia_file"))
-    do websencia.renderView(context,@@(views,"views/"+@("$_websencia_view")))
-    do @context.end()
+    ##    
+    div{$"#<build_view()>"}
+    
 }
 
 			

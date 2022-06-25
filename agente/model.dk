@@ -1,0 +1,22 @@
+#include "dkli.dkh"
+#!
+
+module "agente.dk"
+{
+    @read_query="select 
+        sys_pk, sys_guid, sys_recver, sys_timestamp, sys_dtcreated, sys_deleted, 
+        codigo, 
+        codnomina, email,nombre,telefono,domicilio1
+        from agente where #<@keyfield>=@_entity_id limit 1;"
+
+
+   agente.read::&db,&params
+    {
+        ref agente=entity.read(db,params)
+        agente<"domicilio*">:dbr.rec(db,"select codpos,colonia,direccion,telefonos,sys_recver,iciudad from domicilio where sys_pk=@domicilio1",agente)
+        
+        return  agente
+    }
+
+    point @read to agente.read
+}

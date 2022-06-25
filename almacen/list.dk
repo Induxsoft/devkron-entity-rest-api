@@ -1,0 +1,39 @@
+#include "dkli.dkh"
+#!
+
+module "list_view_alamacen.dk"
+{
+	#include "functions.dkh"
+
+	do @context.begin(@crud_context)
+
+	ref @http_context=@("&http")
+	
+	/*
+	. ->output / if error->input
+	output ->modelo
+	input - > payload (datos de entrada)
+	parameters -> los del get url
+	error -> (Si hay un error !=null)
+	database ->Conexión a la base de datos
+	http -> @http_context (del origen)
+	*/
+	##
+	table
+	{
+		##
+		for i=0;i<@count(@@(@crud_context,"&."))
+		{
+			ref row=@item(@("&."),i)
+			##
+			tr
+			{
+				td{"#<@@(row,'descripcion')>"}
+			}
+			##
+		}
+		##
+	}
+	##
+	do @context.end()
+}
