@@ -55,15 +55,26 @@ module "view.dkl"
 				case "read" { point @success_view to form_view }
 				case "create" 
 				{ 
-					point @success_view to redirect 
+					if @@(params,"_redirect")=="disabled"
+					{ point @success_view to form_view }
+					else { point @success_view to redirect }
+
 					point @fail_view to form_view
 				}
 				case "update" 
 				{ 
-					point @success_view to redirect 
+					if @@(params,"_redirect")=="disabled"
+					{ point @success_view to form_view }
+					else { point @success_view to redirect }
+
 					point @fail_view to form_view
 				}
-				case "delete" { point @success_view to redirect }
+				case "delete" 
+				{ 
+					if @@(params,"_redirect")=="disabled"
+					{ point @success_view to form_view }
+					else { point @success_view to redirect }
+				}
 			}
 		}
 	}
