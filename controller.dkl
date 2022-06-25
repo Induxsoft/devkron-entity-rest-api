@@ -11,9 +11,22 @@ module "crudl.dkl"
 	#include "view.dk"
 
 	#!
+
 	@crud_path="web/api.erp.test" //Ubicación de los archivos de modelo de entidades
 	@auto_crud=@true
 
+	@list_view="list.dk"
+	@form_view="form.dk"
+	@error_view="error.dk"
+
+	@dkl_view_ext=".dk"
+	@websencia_ext=".jsnwm"
+
+	ref params = @@(@http_context,"&request/get")
+	ref input_data = from.json(field.dstr(@http_context,"request/post_string","null"))
+	ref output_data=@null
+
+	@expected_html=contains(tolower(replace(@@(@http_context,"request/headers/HTTP_ACCEPT")," ","")),"text/html")
 	@entity_path=path.concat(@crud_path, @@(@http_context,"request/get/_entities_type"))
 	qname=@@(@http_context,"request/get/_connection")+"@"+@@(@http_context,"request/get/_app_group")
 
@@ -25,12 +38,22 @@ module "crudl.dkl"
 
 	if file.exists(controller_entity) { include controller_entity }
 
+	if @expected_html
+	{
+		//Buscar archivos de vistas
+		@form_view=parse_view_file(@form_view)
+		if @form_view=="" { do rise_error(500,"Vista de formulario no disponible")}
+
+		@list_view=parse_view_file(@list_view)
+		if @list_view=="" { do rise_error(500,"Vista de lista no disponible")}
+
+		@error_view=parse_view_file(@error_view)
+		if @error_view=="" { do rise_error(500,"Vista de error no disponible")}
+	}
+
+	ref db=@null
 	ref db=dbr.login(qname,"ADMIN","")
 	
-    ref params = @@(@http_context,"&request/get")
-	ref input_data = from.json(field.dstr(@http_context,"request/post_string","{}"))
-	ref output_data=@null
-
 	operation=""
 
 	switch toupper(@@(@http_context,"request/headers/request_method"))
@@ -78,6 +101,7 @@ module "crudl.dkl"
 		}
 	}
 
+	params<"_database*">:db
 	that @success_view(params, input_data, output_data, @null)
 
 	
@@ -91,6 +115,7 @@ module "crudl.dkl"
 			@"message":last_error()
 		}
 
+		params<"_database*">:db
 		that @fail_view(params, input_data, output_data, error_info)
 	}
 	

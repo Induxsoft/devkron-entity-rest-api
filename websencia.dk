@@ -1,0 +1,19 @@
+﻿#include "dkli.dkh"
+#!
+program "Websencia Render"
+{
+    #include "functions.dkh"
+    #include "serialize.dkh"
+    #include "dbr.dkh"
+    
+    #include "websencia.dkl"
+
+    #!
+
+    do @context.begin(@crud_context)
+    ref views=websencia.loadViewModels(@("$_websencia_file"))
+    do websencia.renderView(context,@@(views,"views/"+@("$_websencia_view")))
+    do @context.end()
+}
+
+			
