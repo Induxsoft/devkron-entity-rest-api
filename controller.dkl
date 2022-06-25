@@ -12,6 +12,25 @@ module "crudl.dkl"
 
 	#!
 
+	get_payload::
+	{
+		ref post=@@(@http_context,"&request/post")
+
+		if not(isnull(post))
+		{
+			if list.create_from_fields(post)>0
+			{
+				return post
+			}
+		}
+
+		return from.json(field.dstr(@http_context,"request/post_string","null"))
+
+		exception{}
+
+		return @null
+	}
+
 	@crud_path="web/api.erp.test" //Ubicación de los archivos de modelo de entidades
 	@auto_crud=@true
 
@@ -23,7 +42,7 @@ module "crudl.dkl"
 	@websencia_ext=".jsnwm"
 
 	ref params = @@(@http_context,"&request/get")
-	ref input_data = from.json(field.dstr(@http_context,"request/post_string","null"))
+	ref input_data = get_payload()
 	ref output_data=@null
 	ref db=@null
 
