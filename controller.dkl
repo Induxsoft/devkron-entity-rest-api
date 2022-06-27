@@ -48,6 +48,8 @@ module "crudl.dkl"
 	ref output_data=@null
 	ref db=@null
 
+	http_method=toupper(@@(@http_context,"request/headers/request_method"))
+
 	@expected_html=contains(tolower(replace(@@(@http_context,"request/headers/HTTP_ACCEPT")," ","")),"text/html")
 	@entity_path=path.concat(@crud_path, @@(@http_context,"request/get/_entities_type"))
 	qname=@@(@http_context,"request/get/_connection")+"@"+@@(@http_context,"request/get/_app_group")
@@ -71,13 +73,16 @@ module "crudl.dkl"
 
 		@error_view=parse_view_file(@error_view)
 		if @error_view=="" { do rise_error(500,"Vista de error no disponible")}
+
+		//Si el método es POST, pero se requiere HTML y no es una entidad nueva, entonces asumir que es PATCH
+		if @@(params,"_entity_id")!=@entity_id_blank && http_method=="POST" { http_method="PATCH" }
 	}
 
 	ref db=dbr.login(qname,"ADMIN","")
 	ref @database=db
 	operation=""
 
-	switch toupper(@@(@http_context,"request/headers/request_method"))
+	switch http_method
 	{
 		case "GET"
 		{
