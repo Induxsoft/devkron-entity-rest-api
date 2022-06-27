@@ -79,13 +79,57 @@ module "view.dkl"
 		}
 	}
 
+	@url_redir=""
+
+	parse_redir::&params, &input_data, &output_data, &error_info
+	{
+		@keyfield=entity.safe_id(field.dstr(params,"_key",@keyfield))
+        if @table_name=="" { @table_name=entity.safe_id(@@(params,"_entities_type")) }
+
+		ref db=@null
+		if isset("@database") { ref db=@database }
+
+		new context
+		{
+			@".*": output_data
+			@"output*": output_data
+			@"input*": input_data
+			@"parameters*": params
+			@"error*": error_info
+			@"database*": db
+			@"http*":@http_context
+		}
+
+		do @context.begin(context)
+		return ftext(@url_redir)
+		do @context.end()
+
+		exception{return ""}
+	}
+
 	#!
 	redirect :: &params, &input_data, &output_data, &error_info
 	{
-		uri=@@(@http_context,"request/headers/REQUEST_URI")
-		if @@(params,"_entity_id")!="" { uri=dir.name(uri) }
+		if @url_redir!=""
+		{
+			@http_context<"response/headers/Location">: parse_redir(params, input_data, output_data, error_info)
+			return
+		}
+		
+		@keyfield=entity.safe_id(field.dstr(params,"_key",@keyfield))
+        if @table_name=="" { @table_name=entity.safe_id(@@(params,"_entities_type")) }
 
-		uri=replace(path.concat(uri,"?_select="+@@(output_data,@@(params,"_key"))+"&_key="+@@(params,"_key")),"\\","/")
+		uri=list.str(split(@@(@http_context,"request/headers/REQUEST_URI"),"?"),0)
+		//do rise_error(0,uri)
+		if uri!="" 
+		{ 
+			if substring(uri,length(uri)-1,1)=="/" { uri=substring(uri,0,length(uri)-1)}
+		}
+		
+		//do rise_error(0,uri)
+		if @@(params,"$_entity_id")!="" { uri=dir.name(uri) }
+
+		uri=replace(path.concat(uri,"?_select="+@@(output_data,"$"+@keyfield)+"&_key="+@keyfield),"\\","/")
 
 		@http_context<"response/headers/Location">:uri
 	}

@@ -12,6 +12,7 @@ module "Entity.dk"
     @get_sys_pk="select sys_pk from #<@table_name> where #<@keyfield>=@_entity_id and ifnull(sys_deleted,0)=0 limit 1;"
     @list_query="select * from #<@table_name> where ifnull(sys_deleted,0)=0;"
 
+    @sys_fields="sys_pk, sys_guid, sys_dtcreated, sys_timestamp, sys_recver,sys_deleted, sys_lock"
     @update_fields="*"
     @create_fields="*"
 
@@ -50,6 +51,7 @@ module "Entity.dk"
 
     entity.create::&db, &params, &data
     {
+        @keyfield=entity.safe_id(field.dstr(params,"_key",@keyfield))
         if @table_name=="" { @table_name=entity.safe_id(@@(params,"_entities_type")) }
         ref create_data=record.copyex(data,@null,@create_fields,",",@create_alias_fields,",")
 
@@ -66,7 +68,10 @@ module "Entity.dk"
         }
         //////////////////////////////////////////////////////
 
+        create_data<"sys_pk">:parse.num(@@(create_data,"sys_pk"))
+        create_data<"sys_recver">:parse.num(@@(create_data,"sys_recver"))
 
+        //do rise_error(0,to.json(create_data))
         if @use_transaction { do dbr.begin(db) }
 
         ref master=dbr.save(db,@table_name,create_data)
@@ -130,6 +135,7 @@ module "Entity.dk"
 
     entity.update::&db, &params, &data
     {
+        @keyfield=entity.safe_id(field.dstr(params,"_key",@keyfield))
         if @table_name=="" { @table_name=entity.safe_id(@@(params,"_entities_type")) }
         ref update_data=record.copyex(data,@null,@update_fields,",",@update_alias_fields,",")
 

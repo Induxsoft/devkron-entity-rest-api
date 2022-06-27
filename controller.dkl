@@ -75,7 +75,7 @@ module "crudl.dkl"
 		if @error_view=="" { do rise_error(500,"Vista de error no disponible")}
 
 		//Si el método es POST, pero se requiere HTML y no es una entidad nueva, entonces asumir que es PATCH
-		if @@(params,"_entity_id")!=@entity_id_blank && http_method=="POST" { http_method="PATCH" }
+		if @@(params,"_entity_id")!=@entity_id_blank && @@(params,"_entity_id")!="" && http_method=="POST" { http_method="PATCH" }
 	}
 
 	ref db=dbr.login(qname,"ADMIN","")
