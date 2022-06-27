@@ -1,0 +1,11 @@
+#include "dkli.dkh"
+#!
+
+module "marca.dk"
+{
+    @list_query="select #<@sys_fields>, codigo,descripcion from marca order by descripcion asc"
+    @read_query="select #<@sys_fields>, codigo,descripcion from #<@table_name> where #<@keyfield>=@_entity_id limit 1;"
+    // do rise_error(0,ftext(@read_query))
+
+    // ref @delete=@null
+}

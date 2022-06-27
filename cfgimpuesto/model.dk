@@ -1,0 +1,14 @@
+#include "dkli.dkh"
+#!
+
+module "cfgimpuesto.dk"
+{
+    @list_query="select #<@sys_fields>, nombre,I1Compra,I2Compra,I3Compra,I4Compra,
+   I1Venta,I2Venta,I3Venta,I4Venta,uf_TipoI1,uf_TipoI2,uf_TipoI3,uf_TipoI4,tasa,ObjetoImp from cfgimpuesto"
+    @read_query="select #<@sys_fields>, nombre,I1Compra,I2Compra,I3Compra,I4Compra,
+   I1Venta,I2Venta,I3Venta,I4Venta,uf_TipoI1,uf_TipoI2,uf_TipoI3,uf_TipoI4,tasa,ObjetoImp from #<@table_name> where #<@keyfield>=@_entity_id limit 1;"
+}
+
+    
+    
+    

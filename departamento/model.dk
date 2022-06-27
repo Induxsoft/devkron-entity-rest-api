@@ -1,0 +1,11 @@
+#include "dkli.dkh"
+#!
+
+module "departamento.dk"
+{
+    @list_query="select #<@sys_fields>, codigo,descripcion,comision1,comision2,comision3,comision4,comision5 from departamento order by descripcion asc"
+    @read_query="select #<@sys_fields>, codigo,descripcion,comision1,comision2,comision3,comision4,comision5 from #<@table_name> where #<@keyfield>=@_entity_id limit 1;"
+    // do rise_error(0,ftext(@read_query))
+
+    // ref @delete=@null
+}

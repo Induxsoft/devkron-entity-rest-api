@@ -1,0 +1,80 @@
+#include "dkli.dkh"
+#!
+
+module "list.dk"
+{
+    #include "functions.dkh"
+
+    new @table_definition
+    {
+        @"datatable*":@@(@crud_context,"&.")
+        member @"columns"
+        {
+            member @"nombre"
+            {
+                @"caption":"Código"
+            }
+            member @"i1compra"
+            {
+                @"caption":"i1compra"
+            }
+            member @"i2compra"
+            {
+                @"caption":"i2compra"
+            }
+            member @"i3compra"
+            {
+                @"caption":"i3compra"
+            }
+            member @"i4compra"
+            {
+                @"caption":"i4compra"
+            }
+            member @"i1venta"
+            {
+                @"caption":"i1venta"
+            }member @"i2venta"
+            {
+                @"caption":"i2venta"
+            }
+            member @"i3venta"
+            {
+                @"caption":"i3venta"
+            }
+            member @"i4venta"
+            {
+                @"caption":"i4venta"
+            }
+            member @"uf_TipoI1"
+            {
+                @"caption":"uf_TipoI1"
+            }
+            member @"uf_TipoI2"
+            {
+                @"caption":"uf_TipoI2"
+            }
+            member @"uf_TipoI3"
+            {
+                @"caption":"uf_TipoI3"
+            }
+            member @"uf_TipoI4"
+            {
+                @"caption":"uf_TipoI4"
+            }
+            member @"tasa"
+            {
+                @"caption":"TASA"
+            }
+            member @"ObjetoImp"
+            {
+                @"caption":"OBJETO DE IMPUESTO"
+            }
+            member @"_actions"
+            {
+                @"caption":"Acciones"
+            }
+        }
+    }
+
+    #include "web/api.erp.test/_common/list.dk"
+}

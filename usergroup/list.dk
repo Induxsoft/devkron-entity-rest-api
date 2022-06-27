@@ -1,0 +1,34 @@
+#include "dkli.dkh"
+#!
+
+module "list.dk"
+{
+    #include "functions.dkh"
+
+    new @table_definition
+    {
+        @"datatable*":@@(@crud_context,"&.")
+        member @"columns"
+        {
+            member @"description"
+            {
+                @"caption":"Descripción"
+            }
+            member @"groupid"
+            {
+                @"caption":"Grupo ID"
+            }
+            member @"notes"
+            {
+                @"caption":"Notas"
+            }
+            member @"_actions"
+            {
+                @"caption":"Acciones"
+                
+            }
+        }
+    }
+
+    #include "web/api.erp.test/_common/list.dk"
+}

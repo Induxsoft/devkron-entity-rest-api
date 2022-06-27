@@ -3,6 +3,7 @@
 
 module "cajero.dk"
 {
+    @read_query="select sys_pk, sys_guid, sys_recver, sys_timestamp, sys_dtcreated, sys_deleted,codigo,nombre,domicilio1,email,notas,telefono,codnomina from cajero where #<@keyfield>=@_entity_id limit 1;"
     cajero.read::&db,&params
     {
         ref cajero=entity.read(db,params)
@@ -37,6 +38,16 @@ module "cajero.dk"
             do rise_error(500,last_error())
         }
     }
+    cajero.update::&db,&params,&data
+    {
+        if not(isnull(@@(data,"&domicilio")))
+        {
+            ref domicilio=dbr.save(db,"domicilio",@@(data,"&domicilio"))
+            data<"domicilio1">:@@(domicilio,"sys_pk")
+            do field.remove(data,"domicilio")
+        }
+        return entity.update(db,params,data)
+    }
     cajero.delete::&db,table_name,sys_pk
     {
         ref params=record.create()
@@ -49,4 +60,5 @@ module "cajero.dk"
     point @read to cajero.read
     point @create to cajero.create
     point @custom_delete to cajero.delete
+    point @update to cajero.update
 }

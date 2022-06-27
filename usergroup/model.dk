@@ -1,0 +1,8 @@
+#include "dkli.dkh"
+#!
+
+module "usergroup.dk"
+{
+    @list_query="select #<@sys_fields>, description,groupid,notes from usergroup"
+    @read_query="select #<@sys_fields>, description,groupid,notes from #<@table_name> where #<@keyfield>=@_entity_id limit 1;"
+}
