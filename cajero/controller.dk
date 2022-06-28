@@ -1,0 +1,6 @@
+#include "dkli.dkh"
+#!
+module "cajero.controller.dkl"
+{
+	 @url_redir="./?_select=#<@('$./sys_pk')>&_key=sys_pk"
+}

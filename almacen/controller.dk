@@ -3,5 +3,5 @@
 
 module "controller.almacen.dk"
 {
-	@form_view="almacen.jsnwm$form"
+	@form_view="form.jsnwm$form" //almacen.jsnwm$form
 }

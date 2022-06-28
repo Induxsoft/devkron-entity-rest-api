@@ -1,0 +1,7 @@
+#include "dkli.dkh"
+#!
+
+module "controller.dk"
+{
+    //@url_redir="/MaxiComercio.R5/conPrueba/departamento/?_select=#<@('$./sys_pk')>&_key=sys_pk"
+}

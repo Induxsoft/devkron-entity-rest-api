@@ -1,0 +1,8 @@
+#include "dkli.dkh"
+#!
+
+module "zona.dk"
+{
+    @list_query="select #<@sys_fields>, nombre,notas from zona"
+    @read_query="select #<@sys_fields>, nombre,notas from #<@table_name> where #<@keyfield>=@_entity_id limit 1;"
+}

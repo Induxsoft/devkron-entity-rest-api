@@ -19,7 +19,10 @@ module "list_view_almacen.dk"
 	database ->Conexión a la base de datos
 	http -> @http_context (del origen)
 	*/
-	new @table_definition
+
+	#include "functions.dkh"
+
+    new @table_definition
     {
     	@"datatable*":@("&.")
     	member @"columns"
@@ -40,8 +43,44 @@ module "list_view_almacen.dk"
     }
     #$
     div{
+    	script{
+    		$'
+    			function deleteEntity(sys_pk)
+    			{
+    				definitive.rest(#<@url_redir>+sys_pk,"DELETE",null,
+    				function(entity){
+    					window.location.reload();
+    				},
+    				function(error){aler(error);},
+    				function(error){aler(error);}
+    				);
+    			}
+    		'
+    	}
     	#!
     	#include "web/api.erp.test/_common/list.dk"
     }
-	do @context.end()
+    
+    do @context.end()
+    
+	// ##
+	// //div{$"#<to.json(@crud_context)>"}
+	// table
+	// {
+	// 	##
+	// 	for i=0;i<@count(@("&."))
+	// 	{
+	// 		ref row=@item(@("&."),i)
+	// 		##
+	// 		tr
+	// 		{
+	// 			td{"#<@@(row,'')>"}
+	// 			td{"#<@@(row,'')>"}
+	// 		}
+	// 		##
+	// 	}
+	// 	##
+	// }
+	// ##
+	
 }

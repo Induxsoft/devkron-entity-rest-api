@@ -1,0 +1,1 @@
+*: /{_app_group}/{_connection}/{_entities_type}/{_entity_id?}> /controller.dkl

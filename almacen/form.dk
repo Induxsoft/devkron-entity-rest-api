@@ -7,7 +7,7 @@ module "form_view_alamacen.dk"
 	#include "serialize.dkh"
 	do @context.begin(@crud_context)
 	##
-	// div{$"#<to.json(@('&.'))>"}
+	 div{$"#<to.json(@('&.'))>"}
 	form
 	{
 		input(type="text" value="#<@('./codigo')>")

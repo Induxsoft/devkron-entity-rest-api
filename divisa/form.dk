@@ -1,0 +1,25 @@
+#include "dkli.dkh"
+#!
+
+module "form.dk"
+{
+    #include "functions.dkh"
+    do @context.begin(@crud_context)
+    #$
+    div
+    {
+        p{$"#<@('error/message')>"}
+        form(action="." method="POST")
+        {
+            
+            label{"Código"}
+            input(type="text" name="codigo" value="#<@('./codigo')>")
+            label{"Descripción"}
+            input(type="text" name="descripcion" value="#<@('./descripcion')>")
+            label{"Tipo de cambio"}
+            input(type="text" name="tcambio" value="#<@('./tcambio')>")
+            input(type="hidden" name="sys_recver" value="#<@('./sys_recver')>")
+            button(type="submit"){"Guardar"}
+        }
+    }
+}

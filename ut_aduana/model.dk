@@ -1,0 +1,9 @@
+#include "dkli.dkh"
+#!
+
+module "ut_aduana.dk"
+{
+    @list_query="select #<@sys_fields>, uf_codigo,uf_nombre,uf_ciudad,uf_notas from ut_aduana"
+    @read_query="select #<@sys_fields>, uf_codigo,uf_nombre,uf_ciudad,uf_notas from #<@table_name> where #<@keyfield>=@_entity_id limit 1;"
+    
+}

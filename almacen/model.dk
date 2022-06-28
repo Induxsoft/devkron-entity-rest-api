@@ -27,7 +27,7 @@ module "almacen.dk"
 	        {
 	            ref domicilio=dbr.save(db,"domicilio",@@(data,"&domicilio"))
 	            data<"domicilio1">:@@(domicilio,"sys_pk")
-	            do field.remove(data,"domicilio")
+	             do field.remove(data,"domicilio")
 	        }
 	        if not(isnull(@@(data,"&ciudad"))){do field.remove(data,"ciudad")}
 	        if not(isnull(@@(data,"&estado"))){do field.remove(data,"estado")}
@@ -56,7 +56,7 @@ module "almacen.dk"
     }
     almacen.update::&db,&params,&data
     {
-    	if not(isnull(@@(data,"domicilio")))
+    	if not(isnull(@@(data,"&domicilio")))
     	{
     		ref domicilio=dbr.save(db,"domicilio",@@(data,"&domicilio"))
             data<"domicilio1">:@@(domicilio,"sys_pk")

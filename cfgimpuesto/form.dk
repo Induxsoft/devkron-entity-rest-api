@@ -1,0 +1,49 @@
+#include "dkli.dkh"
+#!
+
+module "form.dk"
+{
+    #include "functions.dkh"
+    do @context.begin(@crud_context)
+    #$
+    div
+    {
+        p{$"#<@('error/message')>"}
+        form(action="." method="POST")
+        {
+            
+            label{"Nombre"}
+            input(type="text" name="nombre" value="#<@('./nombre')>")
+            label{"I1COMPRA"}
+            input(type="text" name="i1compra" value="#<@('./i1compra')>")
+            label{"I2COMPRA"}
+            input(type="text" name="i2compra" value="#<@('./i2compra')>")
+            label{"I3COMPRA"}
+            input(type="text" name="i3compra" value="#<@('./i3compra')>")
+            label{"I4COMPRA"}
+            input(type="text" name="i4compra" value="#<@('./i4compra')>")
+            label{"I1VENTA"}
+            input(type="text" name="i1venta" value="#<@('./i1venta')>")
+            label{"I2VENTA"}
+            input(type="text" name="i2venta" value="#<@('./i2venta')>")
+            label{"I3VENTA"}
+            input(type="text" name="i3venta" value="#<@('./i3venta')>")
+            label{"I4VENTA"}
+            input(type="text" name="i4venta" value="#<@('./i4venta')>")
+            label{"uf_TipoI1"}
+            input(type="text" name="uf_TipoI1" value="#<@('./uf_TipoI1')>")
+            label{"uf_TipoI2"}
+            input(type="text" name="uf_TipoI2" value="#<@('./uf_TipoI2')>")
+            label{"uf_TipoI3"}
+            input(type="text" name="uf_TipoI3" value="#<@('./uf_TipoI3')>")
+            label{"uf_TipoI4"}
+            input(type="text" name="uf_TipoI4" value="#<@('./uf_TipoI4')>")
+            label{"TASA"}
+            input(type="text" name="tasa" value="#<@('./tasa')>")
+            label{"OBJETO DE IMPUESTO"}
+            input(type="text" name="ObjetoImp" value="#<@('./ObjetoImp')>")
+            input(type="hidden" name="sys_recver" value="#<@('./sys_recver')>")
+            button(type="submit"){"Guardar"}
+        }
+    }
+}
