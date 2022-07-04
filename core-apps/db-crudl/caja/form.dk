@@ -1,0 +1,150 @@
+#include "dkli.dkh"
+#!
+
+module "form_view_caja.dk"
+{
+	#include "functions.dkh"
+	#include "serialize.dkh"
+    #include "dbr.dkh"
+    #include "uielements.dkl"
+	do @context.begin(@crud_context)
+
+
+    new def_cconsumo
+    {
+        @"datatable*":dbr.list(@("&database"),"select sys_pk, codigo, descripcion from cconsumo order by descripcion;",@null)
+        member "attributes"
+        {
+            @"class":"form-control"
+            @"name":"centroconsumo"
+            @"required":"true"
+        }
+
+        @"text_field":"descripcion"
+        @"value_field":"sys_pk"
+        @"selected":@('./centroconsumo')
+    }
+
+	##
+    div(class="m-0 row justify-content-center" )
+    {
+        div(class="w-50 mt-4")
+        {
+            div(class="card"){
+                div(class="card-body"){
+            div(class="alert aler-danger"){$"#<@('error/message')>"}
+            form(action="." method="POST")
+            {
+                label{"Código:"}
+                input(type="text" name="codigo" class="form-control" value="#<@('./codigo')>" required="true")
+                label{"Descripción:"}
+                input(type="text" name="descripcion" class="form-control" value="#<@('./descripcion')>")
+                label{"Codigo de cuenta:"}
+                input(type="text" name="codcuenta" class="form-control" value="#<@('./codcuenta')>" )
+                input(type="hidden" name="sys_recver" value="#<@('./sys_recver')>")
+                label{"Centro de consumo:"}
+                ##
+                do uie.dbSelect(def_cconsumo)
+                ##br{}
+                legend{"Efectivo"}
+                div(class="mb-3 row")       
+                {
+                    div(class="col-sm-6")
+                    {
+                        label{"Límite de efectivo:"}
+                        input(type="number" name="uf_limefectivo" class="form-control" value="#<@('./uf_limefectivo')>")
+                    }
+                    div(class="col-sm-6")
+                    {
+                        label{"Ventas adicionales permitidas:"}
+                        input(type="number" name="uf_lime_vntadic" class="form-control" value="#<@('./uf_lime_vntadic')>")
+                    }
+                    div(class="col-sm-6")
+                    {
+                        label{"Límite para mostrar aviso:"}
+                        input(type="number" name="uf_lime_aviso" class="form-control" value="#<@('./uf_lime_aviso')>")
+                    }
+                    div(class="col-sm-6")
+                    {
+                        label{"Mensaje de alerta:"}
+                        input(type="text" name="uf_lime_alerta" class="form-control" value="#<@('./uf_lime_alerta')>")
+                    }
+                    
+                }
+                legend{"Cortes"}
+                div(class="mb-3 row")       
+                {
+                    // div(class="mb-3 row")       
+                    // {
+                    //     div(class="col-sm-6")
+                    //     {
+                    //         // input(type="checkbox" name="uf_corte_req" value="#<@('./uf_corte_req')>")
+                    //         // label(class="form-label"){"Corte requerido"}
+                    //     } 
+                    // } 
+                    div(class="col-sm-6")
+                    {
+                        label{"Hora corte 1:"}
+                        input(type="time" name="uf_horacorte1"  value="#<@('./uf_horacorte1')>")
+                    }
+                    div(class="col-sm-6")
+                    {
+                        label{"Hora corte 2:"}
+                        input(type="time" name="uf_horacorte2"  value="#<@('./uf_horacorte2')>")
+                    }
+                    div(class="col-sm-6")
+                    {
+                        label{"Hora corte 3:"}
+                        input(type="time" name="uf_horacorte3" value="#<@('./uf_horacorte3')>")
+                    }
+                    div(class="col-sm-6")
+                    {
+                        label{"Hora corte 4:"}
+                        input(type="time" name="uf_horacorte4"  value="#<@('./uf_horacorte4')>")
+                    }
+                    div(class="col-sm-6")
+                    {
+                        label{"Hora corte 5:"}
+                        input(type="time" name="uf_horacorte5"  value="#<@('./uf_horacorte5')>")
+                    }
+                    div(class="mb-3 row")       
+                    {
+                        div(class="col-sm-6")
+                        {
+                            label{"Ventas adicionales permitidas:"}
+                            input(type="number" name="uf_cortereq_vntadic" class="form-control" value="#<@('./uf_cortereq_vntadic')>")
+                        }
+                        div(class="col-sm-6")
+                        {
+                            label{"Límite de Tickets liberados:"}
+                            input(type="number" name="uf_lim_vntliber" class="form-control" value="#<@('./uf_lim_vntliber')>")
+                        }
+                        
+                    }
+                }
+                legend{"Notas"}
+                div(class="mb-3 row")       
+                {
+                    div(class="col-sm-6")
+                    {
+                        textarea(name="notas" class="form-control" value="#<@('./notas')>"){$'#<@("./notas")>'}
+                    }
+                }
+                div(class="text-center pt-4"){
+                button(class="btn btn-primary m-1"){"Guardar"}
+                a(href="../" class="btn btn-danger m-1"){"Cancelar"}
+                }
+            }
+            
+        }
+        
+        }
+        }
+    }
+	
+     ##
+	do @context.end()
+}
+
+
+                           

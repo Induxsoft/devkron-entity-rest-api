@@ -1,0 +1,43 @@
+#include "dkli.dkh"
+#!
+
+module "list_view_cajero.dk"
+{
+	#include "functions.dkh"
+	
+
+	do @context.begin(@crud_context)
+
+	
+    new @table_definition
+    {
+    	@"datatable*":@@(@crud_context,"&.")
+    	member @"columns"
+        {
+        	member @"codigo"
+        	{
+        		@"caption":"Código"
+        	}
+        	member @"nombre"
+        	{
+        		@"caption":"Nombre"
+        	}
+			member @"codnomina"
+			{
+				@"caption":"Código de Nomina"
+			}
+        	member @"_actions"
+        	{
+        		@"caption":"Acción"
+        	}
+        }
+    }
+	#$
+    div(class="m-0 row justify-content-center" )
+	{
+    	#!
+    	#include "cajero.dk"
+    	#include "web/api.erp.test/core-apps/db-crudl/_common/list.dk"
+    }
+	do @context.end()
+}

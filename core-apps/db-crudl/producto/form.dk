@@ -1,0 +1,610 @@
+#include "dkli.dkh"
+#!
+
+module "form.dk"
+{
+    #include "functions.dkh"
+    #include "serialize.dkh"
+    #include "dbr.dkh"
+    #include "uielements.dkl"
+
+    do @context.begin(@crud_context)
+
+    new def_linea
+    {
+        @"datatable*":dbr.list(@("&database"),"select sys_pk, descripcion from linea order by sys_pk;",@null)
+        member "attributes"
+        {
+            @"class":"form-control linea"
+        }
+        @"value_field":"sys_pk"
+        @"text_field":"descripcion"
+        @"selected":@('./ilinea')
+    }
+
+    new def_marca
+    {
+        @"datatable*":dbr.list(@("&database"),"select sys_pk, descripcion from marca order by sys_pk;",@null)
+        member "attributes"
+        {
+            @"class":"form-control marca"
+        }
+        @"value_field":"sys_pk"
+        @"text_field":"descripcion"
+        @"selected":@('./imarca')
+    }
+
+    new def_departamento
+    {
+        @"datatable*":dbr.list(@("&database"),"select sys_pk, descripcion from departamento order by sys_pk;",@null)
+        member "attributes"
+        {
+            @"class":"form-control departamento"
+        }
+        @"value_field":"sys_pk"
+        @"text_field":"descripcion"
+        @"selected":@('./idepartamento')
+    }
+
+    new def_clase
+    {
+        @"datatable*":dbr.list(@("&database"),"select id, const from cclaseproducto order by id;",@null)
+        member "attributes"
+        {
+            @"class":"form-control clase"
+        }
+        @"value_field":"id"
+        @"text_field":"const"
+        @"selected":@('./iclase')
+    }
+
+    new def_tipo
+    {
+        @"datatable*":dbr.list(@("&database"),"select id, const from ctipoproducto order by id;",@null)
+        member "attributes"
+        {
+            @"class":"form-control tipo"
+        }
+        @"value_field":"id"
+        @"text_field":"const"
+    }
+
+    new def_divisa
+    {
+        @"datatable*":dbr.list(@("&database"),"select sys_pk, descripcion from divisa order by sys_pk;",@null)
+        member "attributes"
+        {
+            @"class":"form-control divisa"
+        }
+        @"value_field":"sys_pk"
+        @"text_field":"descripcion"
+    }
+
+    new def_metodoValuacion
+    {
+        @"datatable*":dbr.list(@("&database"),"select id, const from cmetodosvaluacion order by id;",@null)
+        member "attributes"
+        {
+            @"class":"form-control metodoValuacion"
+        }
+        @"value_field":"id"
+        @"text_field":"const"
+    }
+
+    new def_impuesto
+    {
+        @"datatable*":dbr.list(@("&database"),"select sys_pk, nombre from cfgimpuesto order by sys_pk;",@null)
+        member "attributes"
+        {
+            @"class":"form-control impuesto"
+        }
+        @"value_field":"sys_pk"
+        @"text_field":"nombre"
+    }
+
+    new def_tipoComision
+    {
+        @"datatable*":dbr.list(@("&database"),"select id, const from ctiposcomisionesproducto order by id;",@null)
+        member "attributes"
+        {
+            @"class":"form-control tipoComision"
+        }
+        @"value_field":"id"
+        @"text_field":"const"
+    }
+
+    new def_formaComision
+    {
+        @"datatable*":dbr.list(@("&database"),"select id, const from cformacomisionproducto order by id;",@null)
+        member "attributes"
+        {
+            @"class":"form-control formaComision"
+        }
+        @"value_field":"id"
+        @"text_field":"const"
+    }
+
+    new def_proveedor
+    {
+        @"datatable*":dbr.list(@("&database"),"select sys_pk, nombre from proveedor order by sys_pk;",@null)
+        member "attributes"
+        {
+            @"class":"form-control proveedor"
+        }
+        @"value_field":"sys_pk"
+        @"text_field":"nombre"
+    }
+
+    ##
+    div(class = "d-flex justify-content-center")
+		{
+            #!
+            #include "producto.dk"
+            #$
+			div(class= "w-50 mt-4")
+			{
+                div(class="card")
+                {
+                    
+                    div(class="card-header")
+                    {
+                        p{$"#<@('error/message')>"}
+                        h5(class="card-title"){$"Producto"}
+                        ul(class="nav nav-tabs card-header-tabs" "data-bs-tabs"='tabs')
+                        {
+                            li(class="nav-item")
+                            {
+                                a(class="nav-link active" "aria-current"='true' href="#general" "data-bs-toggle"='tab'){$"General"}
+                            }
+                            li(class="nav-item")
+                            { 
+                                a(class="nav-link"  href="#precioycontrol" "data-bs-toggle"='tab'){$"Precio y Control"}
+                            }
+                            li(class="nav-item")
+                            { 
+                                a(class="nav-link"  href="#inventarioysuministro" "data-bs-toggle"='tab'){$"Inventario y Suministro"}
+                            }
+                            li(class="nav-item")
+                            { 
+                                a(class="nav-link"  href="#notas" "data-bs-toggle"='tab'){$"Notas"}
+                            }
+                            li(class="nav-item")
+                            { 
+                                a(class="nav-link"  href="#sat" "data-bs-toggle"='tab'){$"SAT"}
+                            }
+                        }
+                    }
+                    
+
+                    div(class="card-body tab-content")
+                    {	
+
+// ************************************************** GENERAL *******************************************************
+                        div(class="tab-pane active" id="general")
+                        {
+                            fieldset(class="form-control")
+                            {
+                                div(class="mb-3 row")       
+                                {
+                                    div(class="col-sm-6")
+                                    {
+                                        label(class="form-label"){"Código"}
+                                        input(type="text" class="form-control" id="codigo" name="codigo" value="#<@('./codigo')>")
+                                    }
+                                    div(class="col-sm-6")
+                                    {
+                                        label(class="form-label"){"Descripción"}
+                                        input(type="text" class="form-control" id="descripcion" name="descripcion" value="#<@('./descripcion')>")
+                                    }          
+                                }
+                                div(class="mb-3 row")       
+                                {
+                                    div(class="col-sm-6")
+                                    {
+                                        label(class="form-label"){"Línea"}
+                                        ##
+                                            do uie.dbSelect(def_linea)
+                                        ##
+                                    }
+                                    div(class="col-sm-6")
+                                    {
+                                        label(class="form-label"){"Marca"}
+                                        ##
+                                            do uie.dbSelect(def_marca)
+                                        ##
+                                    }          
+                                }
+                                div(class="mb-3 row")       
+                                {
+                                    div(class="col-sm-6")
+                                    {
+                                        label(class="form-label"){"Departamento"}
+                                        ##
+                                            do uie.dbSelect(def_departamento)
+                                        ##
+                                    }
+                                    div(class="col-sm-6")
+                                    {
+                                        label(class="form-label"){"Clase"}
+                                        ##
+                                            do uie.dbSelect(def_clase)
+                                        ##
+                                    }          
+                                }
+                                div(class="mb-3 row")       
+                                {
+                                    div(class="col-sm-6")
+                                    {
+                                        label(class="form-label"){"Tipo"}
+                                        ##
+                                            do uie.dbSelect(def_tipo)
+                                        ##
+                                    }
+                                    div(class="col-sm-6")
+                                    {
+                                        label(class="form-label"){"Moneda"}
+                                        ##
+                                            do uie.dbSelect(def_divisa)
+                                        ##
+                                    }          
+                                }
+                                div(class="mb-3 row")       
+                                {
+                                    div(class="col-sm-4")
+                                    {
+                                        label(class="form-label"){"Código de barras 1"}
+                                        input(type="text" class="form-control" id="codigoDeBarras1" name="codigoDeBarras1" value="#<@('./codigo')>")
+                                    }
+                                    div(class="col-sm-4")
+                                    {
+                                        label(class="form-label"){"Código de barras 2"}
+                                        input(type="text" class="form-control" id="codigoDeBarras2" name="codigoDeBarras2" value="#<@('./codigo')>")
+                                    }
+                                    div(class="col-sm-4")
+                                    {
+                                        label(class="form-label"){"Código de barras 3"}
+                                        input(type="text" class="form-control" id="codigoDeBarras3" name="codigoDeBarras3" value="#<@('./codigo')>")
+                                    }         
+                                }
+                                div(class="mb-3 row")       
+                                {
+                                    div(class="col-sm-4")
+                                    {
+                                        label(class="form-label"){"Unidad estandar"}
+                                        input(type="text" class="form-control" id="unidadEstandar" name="codigoEstandar" value="#<@('./codigo')>")
+                                    }
+                                    div(class="col-sm-4")
+                                    {
+                                        label(class="form-label"){"X Factor"}
+                                        input(type="text" class="form-control" id="factor" name="factor" value="#<@('./codigo')>")
+                                    }
+                                    div(class="col-sm-4")
+                                    {
+                                        label(class="form-label"){"Unidad de compra"}
+                                        input(type="text" class="form-control" id="unidadDeCompra" name="unidadDeCompra" value="#<@('./codigo')>")
+                                    }         
+                                }
+                                div(class="mb-3 row")       
+                                {
+                                    div(class="form-check col-sm-6")
+                                    {
+                                        input(class="form-check-input" type="checkbox" value="" id="")
+                                        label(class="form-check-label"){"Requiere manejar números de serie"}
+                                    }
+                                    div(class="form-check col-sm-6")
+                                    {
+                                        input(class="form-check-input" type="checkbox" value="" id="")
+                                        label(class="form-check-label"){"Requiere manejar lotes"}
+                                    }          
+                                }
+                            }
+                            
+                        }
+
+// ************************************************** PRECIO Y CONTROL *******************************************************
+                        div(class="tab-pane" id="precioycontrol")
+                        {
+                            fieldset(class="form-control")
+                            {
+                                div(class="mb-3 row")       
+                                {
+                                    div(class="col-sm-6")
+                                    {
+                                        label(class="form-label"){"Método de valuación"}
+                                        ##
+                                            do uie.dbSelect(def_metodoValuacion)
+                                        ##
+                                    }
+                                    div(class="col-sm-6")
+                                    {
+                                        label(class="form-label"){"Impuestos"}
+                                        ##
+                                            do uie.dbSelect(def_impuesto)
+                                        ##
+                                    }          
+                                }
+                                div(class="mb-3 row")       
+                                {
+                                    div(class="col-sm-6")
+                                    {
+                                        label(class="form-label"){"Último costo"}
+                                        input(type="text" class="form-control" id="ultimoCosto" name="ultimoCosto" value="#<@('./codigo')>")
+                                    }
+                                    div(class="col-sm-6")
+                                    {
+                                        label(class="form-label"){"% Utilidad mínima"}
+                                        input(type="text" class="form-control" id="utilidadMinima" name="utilidadMinima" value="#<@('./codigo')>")
+                                    }          
+                                }
+
+                                p{$"Los costos se encuentran expresados en la unidad estándar: PIEZA"}
+                                div(class="mb-3 row")       
+                                {
+                                    div(class="col-sm-6")
+                                    {
+                                        label(class="form-label"){"Tipo de comisión"}
+                                        ##
+                                            do uie.dbSelect(def_tipoComision)
+                                        ##
+                                    }
+                                    div(class="col-sm-6")
+                                    {
+                                        label(class="form-label"){"Forma de comisión"}
+                                        ##
+                                            do uie.dbSelect(def_formaComision)
+                                        ##
+                                    }          
+                                }
+                                div(class="mb-3 row")       
+                                {
+                                    div(class="col-sm-6")
+                                    {
+                                        label(class="form-label"){"Comisión"}
+                                        input(type="text" class="form-control" id="comision" name="comision" value="#<@('./codigo')>")
+                                    }
+                                    div(class="col-sm-6")
+                                    {
+                                        label(class="form-label"){"Precio en puntos"}
+                                        input(type="text" class="form-control" id="precioPuntos" name="precioPuntos" value="#<@('./codigo')>")
+                                    }          
+                                }
+                                div(class="mb-3 row")       
+                                {
+                                    div(class="col-sm-4")
+                                    {
+                                        p{$"% Utilidad"}
+                                        label(class="form-label"){"1"}
+                                        input(type="text" class="form-control")
+                                        label(class="form-label"){"2"}
+                                        input(type="text" class="form-control")
+                                        label(class="form-label"){"3"}
+                                        input(type="text" class="form-control")
+                                        label(class="form-label"){"4"}
+                                        input(type="text" class="form-control")
+                                        label(class="form-label"){"5"}
+                                        input(type="text" class="form-control")
+                                    }
+                                    div(class="col-sm-4")
+                                    {
+                                        p{$"% Descuento"}
+                                        label(class="form-label"){"1"}
+                                        input(type="text" class="form-control")
+                                        label(class="form-label"){"2"}
+                                        input(type="text" class="form-control")
+                                        label(class="form-label"){"3"}
+                                        input(type="text" class="form-control")
+                                        label(class="form-label"){"4"}
+                                        input(type="text" class="form-control")
+                                    } 
+                                    div(class="col-sm-4")
+                                    {
+                                        p{$"Precios(antes de impuestos)"}
+                                        label(class="form-label"){"P. máximo"}
+                                        input(type="text" class="form-control")
+                                        label(class="form-label"){"2"}
+                                        input(type="text" class="form-control")
+                                        label(class="form-label"){"3"}
+                                        input(type="text" class="form-control")
+                                        label(class="form-label"){"4"}
+                                        input(type="text" class="form-control")
+                                        label(class="form-label"){"P. mínimo"}
+                                        input(type="text" class="form-control")
+                                    }          
+                                }
+                                div(class="mb-3 row")       
+                                {
+                                    div(class="form-check col-sm-6")
+                                    {
+                                        input(class="form-check-input" type="checkbox" value="" id="")
+                                        label(class="form-check-label"){"Mantener sincronizado el precio con respecto a la utilidad"}
+                                    }
+                                    div(class="form-check col-sm-6")
+                                    {
+                                        input(class="form-check-input" type="checkbox" value="" id="")
+                                        label(class="form-check-label"){"Precio por volumen (límites)"}
+                                    }          
+                                }
+
+                            } 
+                        }
+
+// ************************************************** INVENTARIO Y SUMINISTRO *******************************************************
+                        div(class="tab-pane" id="inventarioysuministro")
+                        {
+                            fieldset(class="form-control")
+                            {
+                                div(class="mb-3")       
+                                { 
+                                    label(class="form-label"){"Grupo de similares"}
+                                    input(type="text" class="form-control" id="precioPuntosfd" name="precioPuntofggs" value="#<@('./codigo')>")        
+                                }
+                                div(class="mb-3 row")       
+                                {
+                                    div(class="col-sm-6")
+                                    {
+                                        label(class="form-label"){"Unidad"}
+                                        input(type="text" class="form-control")
+                                        label(class="form-label"){"Unidad"}
+                                        input(type="text" class="form-control")
+                                        label(class="form-label"){"Unidad"}
+                                        input(type="text" class="form-control")
+                                    }
+                                    div(class="col-sm-6")
+                                    {
+                                        label(class="form-label"){"Factor"}
+                                        input(type="text" class="form-control")
+                                        label(class="form-label"){"Factor"}
+                                        input(type="text" class="form-control")
+                                        label(class="form-label"){"Factor"}
+                                        input(type="text" class="form-control")
+                                    }           
+                                }
+                                div(class="mb-3 row")       
+                                {
+                                    div(class="col-sm-3")
+                                    {
+                                        label(class="form-label"){"Máximo"}
+                                        input(type="text" class="form-control")
+                                    }
+                                    div(class="col-sm-3")
+                                    {
+                                        label(class="form-label"){"Reorden"}
+                                        input(type="text" class="form-control")
+                                    } 
+                                    div(class="col-sm-3")
+                                    {
+                                        label(class="form-label"){"Mínimo"}
+                                        input(type="text" class="form-control")
+                                    }
+                                    div(class="col-sm-3")
+                                    {
+                                        label(class="form-label"){"Días de entrega"}
+                                        input(type="text" class="form-control")
+                                    }           
+                                }
+                                div(class="mb-3 row")       
+                                {
+                                    div(class="col-sm-6")
+                                    {
+                                        label(class="form-label"){"Proveedor 1"}
+                                        ##
+                                            do uie.dbSelect(def_proveedor)
+                                        ##
+                                    }
+                                    div(class="col-sm-6")
+                                    {
+                                        label(class="form-label"){"Código del producto"}
+                                        input(type="text" class="form-control")
+                                    }        
+                                }
+                                div(class="mb-3 row")       
+                                {
+                                    div(class="col-sm-6")
+                                    {
+                                        label(class="form-label"){"Proveedor 2"}
+                                        ##
+                                            do uie.dbSelect(def_proveedor)
+                                        ##
+                                    }
+                                    div(class="col-sm-6")
+                                    {
+                                        label(class="form-label"){"Código del producto"}
+                                        input(type="text" class="form-control")
+                                    }        
+                                }
+                                div(class="mb-3 row")       
+                                {
+                                    div(class="col-sm-6")
+                                    {
+                                        label(class="form-label"){"Proveedor 3"}
+                                        ##
+                                            do uie.dbSelect(def_proveedor)
+                                        ##
+                                    }
+                                    div(class="col-sm-6")
+                                    {
+                                        label(class="form-label"){"Código del producto"}
+                                        input(type="text" class="form-control")
+                                    }        
+                                }
+                                div(class="mb-3 row")       
+                                {
+                                    div(class="form-check col-sm-6")
+                                    {
+                                        input(class="form-check-input" type="checkbox" value="" id="")
+                                        label(class="form-check-label"){"Visible en punto de venta"}
+                                    }
+                                    div(class="form-check col-sm-6")
+                                    {
+                                        input(class="form-check-input" type="checkbox" value="" id="")
+                                        label(class="form-check-label"){"Incluir complemento concepto en Comprobante Fiscal Digital"}
+                                    }          
+                                }
+
+
+                            }
+                        }
+
+// ************************************************** NOTAS *******************************************************
+                        div(class="tab-pane" id="notas")
+                        {
+                            fieldset(class="form-control")
+                            {
+                                div(class="row m-2")
+                                {
+                                    div(class="col-12")
+                                    {
+                                        textarea(class="form-control" id="textarea" rows="10"){$""}
+                                    }
+                                }    
+                            }
+                        }
+
+// ************************************************** SAT *******************************************************
+                        div(class="tab-pane" id="sat")
+                        {
+                            fieldset(class="form-control")
+                            {
+                                div(class="mb-3 row")       
+                                {
+                                    div(class="col-sm-6")
+                                    {
+                                        label(class="form-label"){"Producto y/o servicio del SAT"}
+                                        input(type="text" class="form-control" id="comision" name="comision" value="#<@('./codigo')>")
+                                    }
+                                    div(class="col-sm-6")
+                                    {
+                                        label(class="form-label"){"Unidad del producto y/o servicio del SAT"}
+                                        input(type="text" class="form-control" id="precioPuntos" name="precioPuntos" value="#<@('./codigo')>")
+                                    }          
+                                }
+                            }
+                        }
+
+
+                        div(class="text-center pt-4")
+                        {
+                            button(onclick="AddProducto()" class="btn btn-primary m-1"){"Guardar"}
+                            a(class="btn btn-danger m-1" href="../" ){"Cancelar"}
+                        }
+                            
+                    }
+                }
+                 
+                                          
+                            
+                
+            }
+
+            #$
+            script
+            {
+                $"
+
+                "
+            }
+            ##
+        }
+        ##
+        do @context.end()
+}

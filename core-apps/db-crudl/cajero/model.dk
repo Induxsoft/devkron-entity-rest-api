@@ -1,0 +1,66 @@
+#include "dkli.dkh"
+#!
+
+module "cajero.dk"
+{
+    @read_query="select 
+        sys_pk, sys_guid, sys_recver, sys_timestamp, sys_dtcreated, sys_deleted, 
+        codigo, codnomina, email, nombre,contrasena,notas, domicilio1
+        from cajero where #<@keyfield>=@_entity_id limit 1;"
+    cajero.read::&db,&params
+    {
+        ref cajero=entity.read(db,params)
+        cajero<"domicilio*">:dbr.rec(db,"select codpos,colonia,direccion,notas,telefonos,sys_pk,sys_recver,iciudad from domicilio where sys_pk=@domicilio1",cajero)
+        cajero<"ciudad*">:dbr.rec(db,"select codigo,codigotel,nombre,sys_pk,sys_recver,Estado from ciudad where sys_pk=@iciudad",@@(cajero,"&domicilio"))
+        cajero<"estado*">:dbr.rec(db,"select codigo,nombre,IPais,sys_pk,sys_recver from edoprov where sys_pk=@estado",@@(cajero,"&ciudad"))
+        cajero<"pais*">:dbr.rec(db,"select codigo,codigotel,nombre,sys_pk,sys_recver from pais where sys_pk=@IPais",@@(cajero,"&estado"))
+        return  cajero
+    }
+    cajero.create::&db,&params,&data
+    {
+        @use_transaction=@false
+		data<"sys_recver">:parse.num(@@(data,"#sys_recver"))
+		data<"sys_pk">:parse.num(@@(data,"#sys_pk"))
+    	do dbr.begin(db)
+    		if not(isnull(@@(data,"&domicilio")))
+	        {
+				data<"domicilio/sys_recver">:parse.num(@@(data,"#domicilio/sys_recver"))
+	            ref domicilio=dbr.save(db,"domicilio",@@(data,"&domicilio"))
+	            data<"domicilio1">:@@(domicilio,"sys_pk")
+	            do field.remove(data,"domicilio")
+	        }
+	        if not(isnull(@@(data,"&ciudad"))){do field.remove(data,"ciudad")}
+	        if not(isnull(@@(data,"&estado"))){do field.remove(data,"estado")}
+	        if not(isnull(@@(data,"&pais"))){do field.remove(data,"pais")}
+	        ref res= entity.create(db,params,data)
+    	do dbr.commit(db)
+    	return res
+    	exception
+    	{
+    		if dbr.in_transaction(db) {do dbr.rollback(db)}
+    		do rise_error(500,last_error())
+    	}
+    }
+    cajero.update::&db,&params,&data
+    {
+        if not(isnull(@@(data,"&domicilio")))
+    	{
+    		ref domicilio=dbr.save(db,"domicilio",@@(data,"&domicilio"))
+            data<"domicilio1">:@@(domicilio,"sys_pk")
+            do field.remove(data,"domicilio")
+    	}
+    	return entity.update(db,params,data)
+    }
+    cajero.delete::&db,&params
+    {
+        @keyfield="sys_pk"
+        ref cajero=entity.read(db,params)
+        do dbr.delete(db,@table_name,"sys_pk=@_entity_id",params)
+        do dbr.delete(db,"domicilio","sys_pk=@domicilio1",cajero)
+    }
+    
+    point @read to cajero.read
+    point @create to cajero.create
+    point @delete to cajero.delete
+    point @update to cajero.update
+}

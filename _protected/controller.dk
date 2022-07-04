@@ -1,0 +1,8 @@
+#include "dkli.dkh"
+#!
+
+module "list_view_contacto.dk"
+{
+	#include "functions.dkh"
+	#include "serialize.dkh"
+}

@@ -1,0 +1,46 @@
+#include "dkli.dkh"
+#!
+
+module "form.dk"
+{
+    #include "functions.dkh"
+    do @context.begin(@crud_context)
+    #$
+    div(class = "d-flex justify-content-center")
+		{
+			div(class= "w-50 mt-4")
+			{
+                div(class="card")
+                {
+                    p{$"#<@('error/message')>"}
+
+                    div(class= "card-body")
+                    {	
+                        form(action="." method="POST")
+                        {
+                            div(class="mb-3")
+                            {
+                                label(class="form-label"){"Código"}
+                                input(type="text" class="form-control" name="codigo" value="#<@('./codigo')>" required="true")
+                            }
+
+                            div(class="mb-3")       
+                            {
+                                label(class="form-label"){"Descripción"}
+                                input(type="text" class="form-control" name="descripcion" value="#<@('./descripcion')>" required="true")
+                            }
+                            
+                            input(type="hidden" name="sys_recver" value="#<@('./sys_recver')>")
+                            div(class="text-center pt-4")
+                            {
+                                
+                                button(type="submit" class="btn btn-primary m-1"){"Guardar"}
+                                a(class="btn btn-danger m-1" href="../" ){"Cancelar"}
+                            }
+                            
+                        }
+                    }
+                }
+            }
+        }
+}

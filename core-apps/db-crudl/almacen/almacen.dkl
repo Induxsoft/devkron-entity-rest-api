@@ -1,0 +1,66 @@
+script{
+	$'
+		$(document).ready(function() {
+		});
+		function deleteEntity(sys_pk){
+			var res=confirm("¿Esta seguro de eliminar la fila?");
+			if(!res)
+				return;
+			
+				definitive.rest("./"+sys_pk,"DELETE",null,
+					function(entity){
+						//Operación exitosa
+						window.location.reload();
+					},
+					function(error){
+						alert(error)
+						//Error de aplicación
+					},
+					function(error){
+						var er=JSON.stringify(error);
+						var p=JSON.parse(er);
+						alert(p.responseJSON.message);
+					});
+		}
+		function AddAlmacen()
+		{
+			
+			var almacen={
+				"sys_recver":$("#sys_recver").val(),
+				"descripcion":$("#descripcion").val(),
+                "codigo":$("#codigo").val(),
+				"sys_pk":$("#sys_pk").val(),
+                domicilio:{
+					sys_recver:$("#sys_recver_Dom").val(),
+					codpos:$("#codpos").val(),
+					colonia:$("#colonia").val(),
+					direccion:$("#direccion").val(),
+					Telefonos:$("#telefono").val(),
+					iciudad:"6",
+					"sys_pk":$("#dom_sys_pk").val()
+				}
+			};
+			var mthd="";
+			if(Number($("#sys_pk").val())>0){mthd="PUT";}
+			else{mthd="POST";}
+			definitive.rest(".",mthd,almacen,
+					function(entity){
+						//Operación exitosa
+						window.location.href="./..";
+					},
+					function(error){
+						console.log(error)
+						alert(error)
+						//Error de aplicación
+					},
+					function(error){
+						console.log(error)
+						var er=JSON.stringify(error);
+						var p=JSON.parse(er);
+						alert(p.responseJSON.message);
+					});
+		}
+	'
+}
+
+

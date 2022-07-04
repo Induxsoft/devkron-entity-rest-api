@@ -1,0 +1,8 @@
+#include "dkli.dkh"
+#!
+
+module "tipo_cliente.dk"
+{
+    @read_query="select #<@sys_fields>, codigo,descripcion,notas
+    from #<@table_name> where #<@keyfield>=@_entity_id limit 1;"
+}

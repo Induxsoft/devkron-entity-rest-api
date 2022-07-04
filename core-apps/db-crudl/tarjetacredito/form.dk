@@ -1,0 +1,28 @@
+#include "dkli.dkh"
+#!
+
+module "form.dk"
+{
+    #include "functions.dkh"
+    do @context.begin(@crud_context)
+    #$
+    div
+    {
+        div(class="alert aler-danger"){$"#<@('error/message')>"}
+        form(action="." method="POST")
+        {
+            
+            label{"Código"}
+            input(type="text" class="form-control" name="codigo" value="#<@('./codigo')>" required="true")
+            label{"Descripción"}
+            input(type="text" class="form-control" name="descripcion" value="#<@('./descripcion')>" required="true")
+            label{"Porcentaje de Comisión"}
+            input(type="number" class="form-control" name="uf_PorComision" value="#<@('./uf_PorComision')>")
+            input(type="hidden" name="sys_recver" value="#<@('./sys_recver')>")
+            button(class="btn btn-primary m-1"){"Guardar"}
+            a(href="../" class="btn btn-danger m-1"){"Cancelar"}
+        }
+    }
+    #!
+    do @context.end()
+}

@@ -1,0 +1,9 @@
+#include "dkli.dkh"
+#!
+
+module "divisa.dk"
+{
+    @list_query="select #<@sys_fields>, codigo,descripcion,tcambio from divisa"
+    @read_query="select #<@sys_fields>, codigo,descripcion,tcambio from #<@table_name> where #<@keyfield>=@_entity_id limit 1;"
+    
+}

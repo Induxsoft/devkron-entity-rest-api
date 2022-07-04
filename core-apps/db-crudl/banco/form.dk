@@ -1,0 +1,52 @@
+#include "dkli.dkh"
+
+#!
+module "form_view_caja.dk"
+{
+	#include "functions.dkh"
+	#include "serialize.dkh"
+    #include "dbr.dkh"
+    #include "uielements.dkl"
+
+    do @context.begin(@crud_context)
+
+    new def_contacto
+    {
+        @"datatable*":dbr.list(@("&database"), "select sys_pk, concat(nombre,' ',apellidos) as nombre from contacto order by nombre", @null)
+    
+        member "attributes"
+        {
+            @"class":"form-control"
+            @"name":"contacto"
+        }
+
+        @"text_field":"nombre"
+        @"value_field":"sys_pk"
+        @"selected":@('./contacto')
+    }
+
+    #$
+    div
+    {
+        div(class="alert aler-danger"){$"#<@('error/message')>"}
+        form(action="." method="POST")
+        {
+            label{"Nombre:"}
+            input(type="text" name="nombre" class="form-control" value="#<@('./nombre')>" required="true")
+            label{"Contacto:"}
+            #!
+            do uie.dbSelect(def_contacto)
+            #$
+            label{"WebSite:"}
+            input(type="text" name="website" class="form-control" value="#<@('./website')>")
+            label{"Notas:"}
+            textarea(name="notas" class="form-control" value="#<@('./notas')>"){$'#<@("./notas")>'}
+            input(type="hidden" name="sys_recver" value="#<@('./sys_recver')>")
+            button(class="btn btn-primary m-1"){"Guardar"}
+            a(href="../" class="btn btn-danger m-1"){"Cancelar"}
+        }
+    }
+
+    #!
+    do @context.end()
+}

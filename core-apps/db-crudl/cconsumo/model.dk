@@ -1,0 +1,17 @@
+#include "dkli.dkh"
+#!
+
+module "cconsumo.dk"
+{
+	@list_query="select sys_pk, sys_recver, codigo, descripcion from cconsumo order by codigo;"
+
+	@read_query="select #<@sys_fields> sys_pk,codigo, descripcion, precio, ialmacen, notas from cconsumo where #<@keyfield>=@_entity_id limit 1;"
+	
+	cconsumo.read::&db,&params
+	{
+		ref cconsumo=entity.read(db,params)
+		return cconsumo
+	}
+
+	point @read to cconsumo.read
+}

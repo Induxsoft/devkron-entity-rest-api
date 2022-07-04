@@ -1,7 +1,0 @@
-#include "dkli.dkh"
-
-#!
-module "agente.controller"
-{
-	// @form_view = "list.dk"
-}

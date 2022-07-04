@@ -1,0 +1,46 @@
+#include "dkli.dkh"
+#!
+
+module "list.dk"
+{
+    #include "functions.dkh"
+
+    new @table_definition
+    {
+        @"datatable*":@@(@crud_context,"&.")
+        member @"columns"
+        {
+            member @"codigo"
+            {
+                @"caption":"Código"
+            }
+            member @"descripcion"
+            {
+                @"caption":"Descripción"
+            }
+			 member @"codcuenta"
+            {
+                @"caption":"Código de cuenta"
+            }
+			 member @"ctiposcategorias"
+            {
+                @"caption":"Tipo"
+            }
+            member @"_actions"
+            {
+                @"caption":"Acciones"
+                
+            }
+        }
+    }
+
+    #$
+    div(class="m-0 row justify-content-center" )
+	{
+    	#!
+    	
+        #include "web/api.erp.test/core-apps/db-crudl/_common/list.dk"
+        #include "categoria.dk"
+    }
+    do @context.end()
+}

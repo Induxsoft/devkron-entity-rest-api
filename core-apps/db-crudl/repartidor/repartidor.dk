@@ -1,0 +1,80 @@
+script{
+    $'
+        function deleteEntity(sys_pk){
+                var res=confirm("¿Esta seguro de eliminar la fila?");
+                if(!res)
+                    return;
+                definitive.rest("./"+sys_pk,"DELETE",null,
+                    function(entity){
+                        //Operación exitosa
+                        window.location.reload();
+                    },
+                    function(error){
+                        alert(error)
+                        //Error de aplicación
+                    },
+                    function(error){
+                        var er=JSON.stringify(error);
+                        var p=JSON.parse(er);
+                        alert(p.responseJSON.message);
+                    });
+        }
+
+        function AddRepartidor()
+		{
+			if ($("#codnomina").val().trim() == ""){
+    			var codnomina = null;
+			}else{
+				codnomina = $("#codnomina").val();
+			}
+
+
+			var repartidor={
+				"sys_recver":$("#sys_recver").val(),
+			
+				//"codnomina":$("#codnomina").val(),
+				"codnomina":codnomina,
+                "codigo":$("#codigo").val(),
+                "nombre":$("#nombre").val(),
+                "email":$("#email").val(),
+				"notas":$("#notas").val(),
+				// "sys_pk":$("#sys_pk").val(),
+                domicilio:{
+					sys_recver:$("#sys_recver_Dom").val(),
+					codpos:$("#codpos").val(),
+					colonia:$("#colonia").val(),
+					direccion:$("#direccion").val(),
+					telefonos:$("#telefono").val(),
+					iciudad:$("#ciudad").val(),
+					// "sys_pk":$("#dom_sys_pk").val()
+				}
+			};
+			var mthd="";
+			if(Number($("#sys_pk").val())>0){mthd="PUT";}
+			else{mthd="POST";}
+			definitive.rest(".",mthd,repartidor,
+					function(entity){
+						//Operación exitosa
+						window.location.href = "http://api.erp.test/MaxiComercio.R5/pruebaIndux/repartidor/";
+						
+					},
+					function(error){
+						console.log(error)
+						alert(error)
+						//Error de aplicación
+					},
+					function(error){
+						console.log(error)
+						var er=JSON.stringify(error);
+						var p=JSON.parse(er);
+						alert(p.responseJSON.message);
+					});
+		}
+
+
+
+
+
+
+    '
+}

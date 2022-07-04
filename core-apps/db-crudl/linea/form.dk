@@ -1,0 +1,101 @@
+#include "dkli.dkh"
+#!
+
+module "form.dk"
+{
+    #include "functions.dkh"
+    do @context.begin(@crud_context)
+
+    ##
+    div(class = "d-flex justify-content-center")
+    {
+        div(class= "w-50 mt-4")
+        {
+            div(class="card")
+            {
+                p{$"#<@('error/message')>"}
+
+                div(class= "card-body")
+                {	
+                    form(action="#" method="POST")
+                    {
+                        div(class="mb-3 row")       
+                        {
+                            div(class="col-sm-6")
+                            {
+                                label(class="form-label"){"Código"}
+                                input(type="text" class="form-control" name="codigo" value="#<@('./codigo')>" required="true")
+                            }
+                            div(class="col-sm-6")
+                            {
+                                label(class="form-label"){"Descripción"}
+                                input(type="text" class="form-control" name="descripcion" value="#<@('./descripcion')>" required="true")
+                            }
+                                    
+                        }
+                        div(class="mb-3 row")       
+                        {
+                            div(class="col-sm-6")
+                            {
+                                label(class="form-label"){"Comisión 1"}
+                                input(type="number" class="form-control" name="comision1" value="#<@('./comision1')>")
+                            }
+                            div(class="col-sm-6")
+                            {
+                                label(class="form-label"){"Comisión 2"}
+                                input(type="number" class="form-control" name="comision2" value="#<@('./comision2')>")
+                            }          
+                        }  
+                        div(class="mb-3 row")       
+                        {
+                            div(class="col-sm-6")
+                            {
+                                label(class="form-label"){"Comisión 3"}
+                                input(type="number" class="form-control" name="comision3" value="#<@('./comision3')>")
+                            }
+                            div(class="col-sm-6")
+                            {
+                                label(class="form-label"){"Comisión 4"}
+                                input(type="number" class="form-control" name="comision4" value="#<@('./comision4')>")
+                            }          
+                        }
+                        div(class="mb-3 row")       
+                        {
+                            div(class="col-sm-6")
+                            {
+                                label(class="form-label"){"Comisión 5"}
+                                input(type="number" class="form-control" name="comision5" value="#<@('./comision5')>")
+                            }
+                                   
+                        } 
+                        div(class="mb-3 row")       
+                        {
+                            div(class="col-sm-6")
+                            {
+                                // input(type="checkbox" name="visible" value="#<@('./visible')>")
+                                // label(class="form-label"){"Visible en punto de venta"}
+                            }        
+                        }  
+                        legend{"Notas"}
+                            div(class="mb-3 row")       
+                            {
+                                div(class="col-sm-6")
+                                {
+                                    textarea(name="notas" class="form-control" value="#<@('./notas')>"){$'#<@("./notas")>'}
+                                }
+                            }
+                        input(type="hidden" name="sys_recver" value="#<@('./sys_recver')>")
+                        input(type="hidden" name="clase" value="4")
+                        div(class="text-center pt-4")
+                        {
+                            button(type="submit" class="btn btn-primary m-1"){"Guardar"}
+                            a(class="btn btn-danger m-1" href="../" ){"Cancelar"}
+                        }
+                        
+                    }
+                }
+            }
+        }
+    }
+    ##
+}

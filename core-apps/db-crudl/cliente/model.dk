@@ -1,0 +1,38 @@
+#include "dkli.dkh"
+#!
+module "cliente.dk"
+{
+    @list_query = "SELECT c.sys_pk, c.sys_guid, c.sys_recver, c.sys_timestamp, c.sys_dtcreated, c.sys_deleted,
+    c.codigo, c.nombre, c.rfc, d.direccion, d.colonia, d.codpos, d.telefonos, c.email, c.saldo, p.nombre AS pais, e.nombre AS estado, cd.nombre AS ciudad, z.nombre AS zona, tc.descripcion, a.nombre AS agente
+    FROM cliente c
+    LEFT JOIN domicilio d ON c.domicilio1 = d.sys_pk
+    LEFT JOIN ciudad cd ON d.iciudad = cd.sys_pk
+    LEFT JOIN edoprov e ON cd.estado = e.sys_pk
+    LEFT JOIN pais p ON e.ipais = p.sys_pk
+    LEFT JOIN zona z ON c.zona = z.sys_pk
+    LEFT JOIN tipocliente tc ON c.tipo = tc.sys_pk
+    LEFT JOIN agente a ON c.agente = a.sys_pk
+    WHERE tc.sys_pk=COALESCE(@tc_id,1)
+    AND (IF(@client = 2, IF(c.saldo >= 1, 1,0), IF(@client = 3, IF(c.saldo <= 0, 1,0),0)) = 1
+    OR (COALESCE(@client,99) != 2 AND COALESCE(@client,99) != 3))"
+
+    @read_query = "select sys_pk, sys_guid, sys_recver, sys_timestamp, sys_dtcreated, sys_deleted, 
+    codigo, nombre, tipo, rfc, curp, domicilio1, telefonos, fax, email, website, contacto1, agente, idivisa
+    from cliente where #<@keyfield>=@_entity_id limit 1;"
+    
+    cliente.read::&db,&params{
+        ref cliente=entity.read(db,params)
+        new data_agente { @"agente":@@(cliente,"#agente") }
+        new data_divisa { @"divisa":@@(cliente,"#idivisa") }
+        cliente<"domicilio*">:dbr.rec(db,"select codpos,colonia,direccion,notas,telefonos,sys_pk,sys_recver,iciudad from domicilio where sys_pk=@domicilio1",cliente)
+        cliente<"ciudad*">:dbr.rec(db,"select codigo,codigotel,nombre,sys_pk,sys_recver,Estado from ciudad where sys_pk=@iciudad",@@(cliente,"&domicilio"))
+        cliente<"estado*">:dbr.rec(db,"select codigo,nombre,IPais,sys_pk,sys_recver from edoprov where sys_pk=@estado",@@(cliente,"&ciudad"))
+        cliente<"pais*">:dbr.rec(db,"select codigo,codigotel,nombre,sys_pk,sys_recver from pais where sys_pk=@IPais",@@(cliente,"&estado"))
+        cliente<"agente*">:dbr.rec(db,"select codigo,nombre,sys_pk,sys_recver from agente where sys_pk=@agente",data_agente)
+        cliente<"divisa*">:dbr.rec(db,"select codigo,descripcion,sys_pk,sys_recver from divisa where sys_pk=@divisa",data_divisa)
+        return cliente
+    }
+
+    point @read to cliente.read
+}
+

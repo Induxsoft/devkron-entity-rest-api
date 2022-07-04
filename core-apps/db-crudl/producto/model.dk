@@ -1,0 +1,50 @@
+#include "dkli.dkh"
+#!
+module "repartidor.dk"
+{
+
+    @list_query="SELECT
+    producto.sys_pk, producto.sys_recver, producto.codigo, producto.descripcion, producto.unidad, producto.existencia, producto.precio1, producto.precio2, producto.precio3, producto.precio4, producto.precio5, producto.saldo, producto.costoultimo,
+    marca.descripcion AS marca,
+    cclaseproducto.const AS clase,
+    divisa.descripcion AS divisa,
+    linea.descripcion AS linea,
+    departamento.descripcion AS departamento
+    FROM producto 
+    LEFT JOIN marca ON imarca=marca.sys_pk 
+    LEFT JOIN cclaseproducto ON ilinea=cclaseproducto.id
+    LEFT JOIN divisa ON idivisa=divisa.sys_pk
+    LEFT JOIN linea ON ilinea=linea.sys_pk 
+    LEFT JOIN departamento ON idepartamento=departamento.sys_pk
+    WHERE linea.sys_pk=COALESCE(@linea,1)
+    AND IF (@marca > 0, marca.sys_pk=@marca,1)
+    AND IF (@departamento > 0, departamento.sys_pk=@departamento,1)
+    AND IF (@divisa > 0, divisa.sys_pk=@divisa,1)
+    ORDER by codigo;"
+
+//  AND IF (@marca > 0, marca.sys_pk=@marca,0)
+
+  
+
+    @read_query="select 
+        sys_pk, sys_guid, sys_recver, sys_timestamp, sys_dtcreated, sys_deleted, 
+        codigo, descripcion, ilinea, imarca, idepartamento, iclase
+        from producto where #<@keyfield>=@_entity_id limit 1;"
+
+
+    // repartidor.read::&db,&params
+    // {
+    //     ref repartidor=entity.read(db,params)
+    //     repartidor<"domicilio*">:dbr.rec(db,"select codpos,colonia,direccion,notas,telefonos,sys_pk,sys_recver,iciudad from domicilio where sys_pk=@domicilio1",repartidor)
+    //     repartidor<"ciudad*">:dbr.rec(db,"select codigo,codigotel,nombre,sys_pk,sys_recver,Estado from ciudad where sys_pk=@iciudad",@@(repartidor,"&domicilio"))
+    //     repartidor<"estado*">:dbr.rec(db,"select codigo,nombre,IPais,sys_pk,sys_recver from edoprov where sys_pk=@estado",@@(repartidor,"&ciudad"))
+    //     repartidor<"pais*">:dbr.rec(db,"select codigo,codigotel,nombre,sys_pk,sys_recver from pais where sys_pk=@IPais",@@(repartidor,"&estado"))
+    //     return  repartidor
+    // }
+
+
+
+
+    // point @read to repartidor.read
+   
+}

@@ -1,0 +1,87 @@
+#include "dkli.dkh"
+#!
+
+module "list_view_contacto.dk"
+{
+	#include "functions.dkh"
+	#include "serialize.dkh"
+
+    do @context.begin(@crud_context)
+
+	ref @http_context=@("&http")
+	
+	new @table_definition
+    {
+    	@"datatable*":@("&.")
+    	member @"columns"
+        {
+        	member @"tratamiento"
+        	{
+        		@"caption":"Tratamiento"
+        	}
+        	member @"nombre"
+        	{
+        		@"caption":"Nombre"
+        	}
+            member @"empresa"
+        	{
+        		@"caption":"Empresa"
+        	}
+            member @"puesto"
+        	{
+        		@"caption":"Puesto"
+        	}
+            member @"tel1"
+        	{
+        		@"caption":"Telefono"
+        	}
+            member @"domicilio"
+        	{
+        		@"caption":"Domicilio"
+        	}
+            member @"website"
+        	{
+        		@"caption":"WebSite"
+        	}
+            member @"email1"
+        	{
+        		@"caption":"eMail"
+        	}
+            member @"tel2"
+        	{
+        		@"caption":"Tel2"
+        	}
+            member @"tel3"
+        	{
+        		@"caption":"Tel3"
+        	}
+            member @"email2"
+        	{
+        		@"caption":"eMail2"
+        	}
+            member @"email3"
+        	{
+        		@"caption":"eMail3"
+        	}
+            member @"email4"
+        	{
+        		@"caption":"eMail4"
+        	}
+            member @"notas"
+        	{
+        		@"caption":"Notas"
+        	}
+        	member @"_actions"
+        	{
+        		@"caption":"Acción"
+        	}
+        }
+    }
+    #$
+    div{
+    	#!
+		#include "contacto.dkl"
+    	#include "web/api.erp.test/core-apps/db-crudl/_common/list.dk"
+    }
+	do @context.end()
+}

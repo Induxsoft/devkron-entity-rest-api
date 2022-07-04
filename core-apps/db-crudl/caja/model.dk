@@ -1,0 +1,19 @@
+#include "dkli.dkh"
+#!
+
+module "caja.dk"
+{
+	@read_query="select #<@sys_fields>,codigo,descripcion,centroconsumo,codcuenta,
+	uf_limefectivo,uf_lime_vntadic,uf_lime_aviso,uf_lime_alerta,uf_corte_req,
+	uf_horacorte1,uf_horacorte2,uf_horacorte3,uf_horacorte4,uf_horacorte5,
+	uf_cortereq_vntadic,uf_lim_vntliber,notas 
+	from caja where #<@keyfield>=@_entity_id limit 1;"
+	caja.read::&db,&params
+	{
+		ref caja=entity.read(db,params)
+		// caja<"centroConsumo*">:dbr.rec("select sys_pk,sys_recver,codigo,descripcion,notas,precio,ialmacen,uf_domiciliocfd,uf_expedicioncxc,uf_inhabilitado,
+		// 	uf_fechainhabilitacion,uf_grupoprod,porcentaje_esperado from cconsumo where sys_pk=1",caja)
+		return caja
+	}
+	point @read to caja.read
+}

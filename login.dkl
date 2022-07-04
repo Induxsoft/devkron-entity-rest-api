@@ -1,0 +1,58 @@
+#include "dkli.dkh"
+
+#!
+module "login.dk"
+{
+    #include "functions.dkh"
+    #include "webcl.dkh"
+    #include "serialize.dkh"
+    #include "dbr.dkh"
+
+    printForm::
+    {
+        #$
+        div
+        {
+            form(method="POST" action="" class="form-control")
+            {
+                div(class="mb-3 row")       
+                {
+                    label{"Usuario"}
+                    input(type="text" name="user" id="user"){$""}
+                }
+                div(class="mb-3 row")       
+                {
+                    label{"Contraseña"}
+                    input(type="password" name="pwd" id="pwd"){$""}
+                }
+                
+                button(type="submit" class="btn btn-success"){$"Entrar"}
+            }
+        }
+    }
+
+    #!
+    validation::
+    {
+        user = @@(@http_context,"request/post/user")
+        pwd = @@(@http_context,"request/post/pwd")
+
+        do dbr.setHashUnicode(1)
+        ref db = dbr.login("BdR8_MXCR5@MaxiComercio.R5",user,pwd) //fijo de momento
+        idSesion = dbr.getSID(db)
+
+        @http_context<"response/headers/location">:"http://api.erp.test/?token="+idSesion
+    }
+    
+    switch @@(@http_context,"request/headers/request_method")
+    {
+        case "GET"
+        {
+            #$ div { #! do printForm() }
+        }
+        case "POST"
+        {
+            do validation()
+        }
+    }
+}

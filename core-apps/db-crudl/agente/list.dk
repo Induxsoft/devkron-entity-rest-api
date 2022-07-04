@@ -1,0 +1,60 @@
+#include "dkli.dkh"
+#!
+
+module "list.dk"
+{
+    #include "functions.dkh"
+    #include "uielements.dkl"
+    #include "uielements.dbtable.dkl"
+
+    new @table_definition
+    {
+        @"datatable*":@@(@crud_context,"&.")
+        member @"columns"
+        {
+            member @"codigo"
+            {
+                @"caption":"Código"
+            }
+            member @"nombre"
+            {
+                @"caption":"Nombre"
+            }
+            /*member @"pcomision"
+            {
+                @"caption":"Comisión(%)"
+            }*/
+			member @"codnomina"
+            {
+                @"caption":"Código de Nómina"
+            }
+			 member @"telefono"
+            {
+                @"caption":"Teléfono"
+            }
+            /*member @"email"
+            {
+                @"caption":"Email"
+            }
+            member @"domicilio"
+            {
+                @"caption":"Domicilio"
+            }*/
+            member @"_actions"
+            {
+                @"caption":"Acciones"
+                
+            }
+        }
+    }
+
+      #$
+    div(class="m-0 row justify-content-center" )
+	{
+    	#!
+    	#include "agente.dk"
+    	
+        #include "web/api.erp.test/core-apps/db-crudl/_common/list.dk"
+    }
+    do @context.end()
+}

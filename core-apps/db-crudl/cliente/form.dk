@@ -1,0 +1,541 @@
+#include "dkli.dkh"
+#!
+
+module "form.dk"
+{
+    #include "functions.dkh"
+    #include "serialize.dkh"
+    #include "dbr.dkh"
+    #include "uielements.dkl"
+
+    do @context.begin(@crud_context)
+
+    #$
+    div(class="d-flex justify-content-center")
+    {
+        div(class= "w-50 mt-4")
+        {
+            div(class="container shadow py-2")
+            {
+                div(class="container network_wrapper col-sm p-2")
+                {
+                    div(class="card")
+                    {
+                        p{$"#<@('error/message')>"}
+                        div(class="card-header")
+                        {
+                            h5(class="card-title"){$"Cliente"}
+                            ul(class="nav nav-tabs card-header-tabs" "data-bs-tabs"='tabs')
+                            {
+                                li(class="nav-item")
+                                {
+                                    a(class="nav-link active" "aria-current"='true' href="#general" "data-bs-toggle"='tab'){$"General"}
+                                }
+                                li(class="nav-item")
+                                {
+                                    a(class="nav-link"  href="#administracion" "data-bs-toggle"='tab'){$"Administración"}
+                                }
+                                li(class="nav-item")
+                                {
+                                    a(class="nav-link"  href="#datos_adicionales" "data-bs-toggle"='tab'){$"Datos adicionales"}
+                                }
+                                li(class="nav-item")
+                                {
+                                    a(class="nav-link"  href="#notas" "data-bs-toggle"='tab'){$"Notas"}
+                                }
+                            }
+                        }
+
+                        div(class="card-body tab-content p-4")
+                        {	
+                            div(class="tab-pane active" id="general")
+                            {
+                                div
+                                {
+                                    div(class="row m-2")
+                                    {
+                                        div(class="col-12")
+                                        {
+                                            label{"Código:"}
+                                            input(type="text" name="codigo" class="form-control" value="#<@('./codigo')>")
+                                        }
+                                    }
+                                    div(class="row m-2")
+                                    {
+                                        div(class="col-12")
+                                        {
+                                            label{"Nombre:"}
+                                            input(type="text" name="nombre" class="form-control" value="#<@('./nombre')>")
+                                        }
+                                    }
+                                    div(class="row m-2")
+                                    {
+                                        div(class="col-12")
+                                        {
+                                            label{"Tipo:"}
+                                            input(type="text" name="tipo" class="form-control" value="#<@('./tipo')>")
+                                        }
+                                    }
+                                    div(class="row m-2")
+                                    {
+                                        div(class="col-6")
+                                        {
+                                            label{"RFC:"}
+                                            input(type="text" name="rfc" class="form-control" value="#<@('./rfc')>")
+                                        }
+                                        div(class="col-6")
+                                        {
+                                            label{"CURP:"}
+                                            input(type="text" name="curp" class="form-control" value="#<@('./curp')>")
+                                        }
+                                    }
+                                    input(type="hidden" name="sys_pk" class="form-control" value="#<@('./sys_pk')>")
+                                    input(type="hidden" name="sys_recver" class="form-control" value="#<@('./sys_recver')>")
+                                }
+                                div(class="card mt-4 mb-4")
+                                {
+                                    div(class="card-header bg-transparent")
+                                    {
+                                        h6{$"Domicilio fiscal"}
+                                    }
+                                    div(class="card-body")
+                                    {
+                                        div(class="row m-2")
+                                        {
+                                            div(class="col-6")
+                                            {
+                                                label{"País:"}
+                                                input(type="text" name="domicilio_pais" class="form-control" value="#<@('./pais/nombre')>")
+                                            }
+                                            div(class="col-6")
+                                            {
+                                                label{"Estado:"}
+                                                input(type="text" name="domicilio_estado" class="form-control" value="#<@('./estado/nombre')>")
+                                            }
+                                        }
+                                        div(class="row m-2")
+                                        {
+                                            div(class="col-12")
+                                            {
+                                                label{"Ciudad:"}
+                                                input(type="text" name="domicilio_ciudad" class="form-control" value="#<@('./ciudad/nombre')>")
+                                            }
+                                        }
+                                        p{"Dirección:"}
+                                        #!
+                                        ref dom_list =  split(@('./domicilio/direccion'), "|")
+                                        calle=""
+                                        no_ext=""
+                                        no_int=""
+                                        if list.count(dom_list)>1
+                                        {
+                                            calle = list.str(dom_list,2)
+                                            no_ext = list.str(dom_list,3)
+                                            no_int = list.str(dom_list,4)
+                                        }
+                                        #$
+                                        div(class="row m-2")
+                                        {
+                                            div(class="col-6")
+                                            {
+                                                label{"Calle:"}
+                                                input(type="text" name="domicilio_direccion" class="form-control" value="#<calle>")
+                                            }
+                                            div(class="col-3")
+                                            {
+                                                label{"No. ext:"}
+                                                
+                                                input(type="text" name="general_codigo" class="form-control" value="#<no_ext>")
+                                            }
+                                            div(class="col-3")
+                                            {
+                                                label{"No int:"}
+                                                input(type="text" name="general_codigo" class="form-control" value="#<no_int>")
+                                            }
+                                        }
+                                        div(class="row m-2")
+                                        {
+                                            div(class="col-12")
+                                            {
+                                                label{"Colonia:"}
+                                                input(type="text" name="general_codigo" class="form-control" value="#<@('./domicilio/colonia')>")
+                                            }
+                                        }
+                                        div(class="row m-2")
+                                        {
+                                            div(class="col-4")
+                                            {
+                                                label{"Código postal:"}
+                                                input(type="text" name="general_codigo" class="form-control" value="#<@('./domicilio/codpos')>")
+                                            }
+                                            div(class="col-8")
+                                            {
+                                                label{"Tel:"}
+                                                input(type="text" name="general_codigo" class="form-control" value="#<@('./domicilio/telefonos')>")
+                                            }
+                                        }
+                                    }
+                                }
+                                div
+                                {
+                                    div(class="row m-2")
+                                    {
+                                        div(class="col-12")
+                                        {
+                                            label{"Teléfonos:"}
+                                            input(type="text" name="general_codigo" class="form-control" value="#<@('./telefonos')>")
+                                        }
+                                    }
+                                    div(class="row m-2")
+                                    {
+                                        div(class="col-12")
+                                        {
+                                            label{"Fax:"}
+                                            input(type="text" name="general_codigo" class="form-control" value="#<@('./fax')>")
+                                        }
+                                    }
+                                    div(class="row m-2")
+                                    {
+                                        div(class="col-12")
+                                        {
+                                            label{"E-mail:"}
+                                            input(type="text" name="general_nombre" class="form-control" value="#<@('./email')>")
+                                        }
+                                    }
+                                    div(class="row m-2")
+                                    {
+                                        div(class="col-12")
+                                        {
+                                            label{"Sitio web:"}
+                                            input(type="text" name="general_tipo" class="form-control" value="#<@('./website')>")
+                                        }
+                                    }
+                                    div(class="row m-2")
+                                    {
+                                        div(class="col-12")
+                                        {
+                                            label{"Contacto:"}
+                                            input(type="text" name="general_rfc" class="form-control" value="#<@('./contacto1')>")
+                                        }
+                                    }
+                                }
+                            }
+
+
+
+                            div(class="tab-pane" id="administracion")
+                            {
+                                div
+                                {
+                                    div(class="row m-2")
+                                    {
+                                        div(class="col-12")
+                                        {
+                                            label{"Agente:"}
+                                            input(type="text" name="general_codigo" class="form-control" value="#<@('./agente/nombre')>" readonly="")
+                                        }
+                                    }
+                                    div(class="row m-2")
+                                    {
+                                        div(class="col-12")
+                                        {
+                                            label{"Divisa:"}
+                                            input(type="text" name="general_nombre" class="form-control" value="#<@('./divisa/descripcion')>")
+                                        }
+                                    }
+                                    div(class="row m-2")
+                                    {
+                                        div(class="col-8")
+                                        {
+                                            label{"Precio:"}
+                                            input(type="text" name="general_tipo" class="form-control" value="#<@('./tratamiento')>")
+                                        }
+                                        div(class="col-4")
+                                        {
+                                            label{"Descuento:"}
+                                            input(type="text" name="general_rfc" class="form-control" value="#<@('./tratamiento')>")
+                                        }
+                                    }
+                                    div(class="row m-2")
+                                    {
+                                        div(class="col-12")
+                                        {
+                                            input(class="form-check-input" type="checkbox" value="" id="flexCheckDefault")
+                                            label(class="form-check-label" for="flexCheckDefault"){"Otorgar crédito:"}
+                                        }
+                                        hr(class="col-12"){$""}
+                                        div(class="col-12")
+                                        {
+                                            input(class="form-check-input" type="checkbox" value="" id="flexCheckDefault2")
+                                            label(class="form-check-label" for="flexCheckDefault2"){"Ilimitado:"}
+                                            input(class="form-check-input" type="checkbox" value="" id="flexCheckDefault3")
+                                            label(class="form-check-label" for="flexCheckDefault3"){"Límite:"}
+                                        }
+                                    }
+                                    div(class="row m-2")
+                                    {
+                                        div(class="col-12")
+                                        {
+                                            label{"Días de crédito:"}
+                                            input(type="number" name="general_nombre" class="form-control" value="#<@('./tratamiento')>")
+                                        }
+                                    }
+                                    div(class="row m-2")
+                                    {
+                                        div(class="col-12")
+                                        {
+                                            label{"Cuenta contable:"}
+                                            input(type="number" name="general_nombre" class="form-control" value="#<@('./tratamiento')>")
+                                        }
+                                    }
+                                    div(class="row m-2")
+                                    {
+                                        div(class="col-12")
+                                        {
+                                            label{"Zona:"}
+                                            input(type="number" name="general_nombre" class="form-control" value="#<@('./tratamiento')>")
+                                        }
+                                    }
+                                    div(class="row m-2")
+                                    {
+                                        div(class="col-12")
+                                        {
+                                            label{"Estatus:"}
+                                            input(type="number" name="general_nombre" class="form-control" value="#<@('./tratamiento')>")
+                                        }
+                                    }
+                                    hr{$""}
+                                    div(class="row m-2")
+                                    {
+                                        div(class="col-12")
+                                        {
+                                            label{"Saldo por cobrar:"}
+                                            input(type="number" name="general_nombre" class="form-control" value="#<@('./tratamiento')>")
+                                        }
+                                    }
+                                    hr{$""}
+                                    div(class="row m-2")
+                                    {
+                                        div(class="col-12")
+                                        {
+                                            label{"Saldo en monedero:"}
+                                            input(type="number" name="general_nombre" class="form-control" value="#<@('./tratamiento')>")
+                                        }
+                                        div(class="col-12")
+                                        {
+                                            label{"Puntos disponibles:"}
+                                            input(type="number" name="general_nombre" class="form-control" value="#<@('./tratamiento')>")
+                                        }
+                                    }
+                                    div(class="row m-2")
+                                    {
+                                        div(class="col-12")
+                                        {
+                                            input(class="form-check-input" type="checkbox" value="" id="flexCheckDefault")
+                                            label(class="form-check-label" for="flexCheckDefault"){"Incluir addenda en comprobante fiscal digital:"}
+                                        }
+                                    }
+                                }
+                            }
+
+
+
+                            div(class="tab-pane" id="datos_adicionales")
+                            {
+                                div
+                                {
+                                    div(class="row m-2")
+                                    {
+                                        div(class="col-12")
+                                        {
+                                            label{"Contacto 2:"}
+                                            input(type="text" name="general_codigo" class="form-control" value="#<@('./tratamiento')>")
+                                        }
+                                    }
+                                    div(class="row m-2")
+                                    {
+                                        div(class="col-12")
+                                        {
+                                            label{"Contacto 3:"}
+                                            input(type="text" name="general_nombre" class="form-control" value="#<@('./tratamiento')>")
+                                        }
+                                    }
+                                }
+                                div(class="card mt-4 mb-4")
+                                {
+                                    div(class="card-header bg-transparent")
+                                    {
+                                        h6{$"Domicilio 2(alterno)"}
+                                    }
+                                    div(class="card-body")
+                                    {
+                                        div(class="row m-2")
+                                        {
+                                            div(class="col-6")
+                                            {
+                                                label{"País:"}
+                                                input(type="text" name="general_codigo" class="form-control" value="#<@('./tratamiento')>")
+                                            }
+                                            div(class="col-6")
+                                            {
+                                                label{"Estado:"}
+                                                input(type="text" name="general_codigo" class="form-control" value="#<@('./tratamiento')>")
+                                            }
+                                        }
+                                        div(class="row m-2")
+                                        {
+                                            div(class="col-12")
+                                            {
+                                                label{"Ciudad:"}
+                                                input(type="text" name="general_codigo" class="form-control" value="#<@('./tratamiento')>")
+                                            }
+                                        }
+                                        p{"Dirección:"}
+                                        div(class="row m-2")
+                                        {
+                                            div(class="col-6")
+                                            {
+                                                label{"Calle:"}
+                                                input(type="text" name="general_codigo" class="form-control" value="#<@('./tratamiento')>")
+                                            }
+                                            div(class="col-3")
+                                            {
+                                                label{"No. ext:"}
+                                                input(type="text" name="general_codigo" class="form-control" value="#<@('./tratamiento')>")
+                                            }
+                                            div(class="col-3")
+                                            {
+                                                label{"No int:"}
+                                                input(type="text" name="general_codigo" class="form-control" value="#<@('./tratamiento')>")
+                                            }
+                                        }
+                                        div(class="row m-2")
+                                        {
+                                            div(class="col-12")
+                                            {
+                                                label{"Colonia:"}
+                                                input(type="text" name="general_codigo" class="form-control" value="#<@('./tratamiento')>")
+                                            }
+                                        }
+                                        div(class="row m-2")
+                                        {
+                                            div(class="col-4")
+                                            {
+                                                label{"Código postal:"}
+                                                input(type="text" name="general_codigo" class="form-control" value="#<@('./tratamiento')>")
+                                            }
+                                            div(class="col-8")
+                                            {
+                                                label{"Tel:"}
+                                                input(type="text" name="general_codigo" class="form-control" value="#<@('./tratamiento')>")
+                                            }
+                                        }
+                                    }
+                                }
+                                div(class="card mt-4 mb-4")
+                                {
+                                    div(class="card-header bg-transparent")
+                                    {
+                                        h6{$"Domicilio 3(alterno)"}
+                                    }
+                                    div(class="card-body")
+                                    {
+                                        div(class="row m-2")
+                                        {
+                                            div(class="col-6")
+                                            {
+                                                label{"País:"}
+                                                input(type="text" name="general_codigo" class="form-control" value="#<@('./tratamiento')>")
+                                            }
+                                            div(class="col-6")
+                                            {
+                                                label{"Estado:"}
+                                                input(type="text" name="general_codigo" class="form-control" value="#<@('./tratamiento')>")
+                                            }
+                                        }
+                                        div(class="row m-2")
+                                        {
+                                            div(class="col-12")
+                                            {
+                                                label{"Ciudad:"}
+                                                input(type="text" name="general_codigo" class="form-control" value="#<@('./tratamiento')>")
+                                            }
+                                        }
+                                        p{"Dirección:"}
+                                        div(class="row m-2")
+                                        {
+                                            div(class="col-6")
+                                            {
+                                                label{"Calle:"}
+                                                input(type="text" name="general_codigo" class="form-control" value="#<@('./tratamiento')>")
+                                            }
+                                            div(class="col-3")
+                                            {
+                                                label{"No. ext:"}
+                                                input(type="text" name="general_codigo" class="form-control" value="#<@('./tratamiento')>")
+                                            }
+                                            div(class="col-3")
+                                            {
+                                                label{"No int:"}
+                                                input(type="text" name="general_codigo" class="form-control" value="#<@('./tratamiento')>")
+                                            }
+                                        }
+                                        div(class="row m-2")
+                                        {
+                                            div(class="col-12")
+                                            {
+                                                label{"Colonia:"}
+                                                input(type="text" name="general_codigo" class="form-control" value="#<@('./tratamiento')>")
+                                            }
+                                        }
+                                        div(class="row m-2")
+                                        {
+                                            div(class="col-4")
+                                            {
+                                                label{"Código postal:"}
+                                                input(type="text" name="general_codigo" class="form-control" value="#<@('./tratamiento')>")
+                                            }
+                                            div(class="col-8")
+                                            {
+                                                label{"Tel:"}
+                                                input(type="text" name="general_codigo" class="form-control" value="#<@('./tratamiento')>")
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+
+
+
+                            div(class="tab-pane" id="notas")
+                            {
+                                div
+                                {
+                                    div(class="row m-2")
+                                    {
+                                        div(class="col-12")
+                                        {
+                                            textarea(class="form-control" id="textarea" rows="20"){$""}
+                                        }
+                                    }
+                                }
+                            }
+
+
+
+                            div(class="text-center pt-4")
+                            {
+                                button(type="submit" class="btn btn-primary m-1"){"Guardar"}
+                                a(class="btn btn-danger m-1" href="../" ){"Cancelar"}
+                            }
+                        }
+                    }
+                }    
+            }
+        }
+    }
+    
+
+    #!
+    do @context.end()
+}

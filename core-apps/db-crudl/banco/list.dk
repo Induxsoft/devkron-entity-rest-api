@@ -1,0 +1,42 @@
+#include "dkli.dkh"
+
+#!
+module "list_view_banco"
+{
+    #include "functions.dkh"
+    #include "serialize.dkh"
+
+    do @context.begin(@crud_context)
+    ref @http_context = @("&http")
+
+    new @table_definition
+    {
+        @"datatable*":@("&.")
+
+        member @"columns"
+        {
+            member @"nombre"
+            {
+                @"caption":"Nombre"
+            }
+            member @"contacto"
+            {
+                @"caption":"Contacto"
+            }
+            member @"_actions"
+            {
+                @"caption":"Acción"
+            }
+        }
+    }
+
+    #$
+    div
+    {
+        #!
+        #include "banco.dkl"
+        #include "web/api.erp.test/core-apps/db-crudl/_common/list.dk" 
+    }
+    #!
+    do @context.end()
+}

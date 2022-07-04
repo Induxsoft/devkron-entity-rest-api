@@ -1,0 +1,250 @@
+#include "dkli.dkh"
+#!
+
+module "list.dk"
+{
+    #include "functions.dkh"
+    #include "serialize.dkh"
+    #include "dbr.dkh"
+    #include "uielements.dkl"
+
+    ref @http_context=@("&http")
+
+    do @context.begin(@crud_context)
+
+    new @table_definition
+    {
+        @"datatable*":@("&.")
+        member @"columns"
+        {
+            member @"codigo"
+            {
+                @"caption":"Código"
+            }
+            member @"descripcion"
+            {
+                @"caption":"Descripción"
+            }
+            member @"marca"
+            {
+                @"caption":"Marca"
+            }
+            member @"unidad"
+            {
+                @"caption":"Unidad"
+            }
+            member @"existencia"
+            {
+                @"caption":"Existencia"
+            }
+            member @"precio1"
+            {
+                @"caption":"Precio 1"
+            }
+            member @"precio2"
+            {
+                @"caption":"Precio 2"
+            }
+            member @"precio3"
+            {
+                @"caption":"Precio 3"
+            }
+            member @"precio4"
+            {
+                @"caption":"Precio 4"
+            }
+            member @"precio5"
+            {
+                @"caption":"Precio 5"
+            }
+            member @"saldo"
+            {
+                @"caption":"Saldo"
+            }
+            member @"costoultimo"
+            {
+                @"caption":"Costo último"
+            }
+            member @"clase"
+            {
+                @"caption":"Clase"
+            }
+            member @"divisa"
+            {
+                @"caption":"Divisa"
+            }
+            member @"linea"
+            {
+                @"caption":"Linea"
+            }
+            member @"departamento"
+            {
+                @"caption":"departamento"
+            }
+            member @"_actions"
+            {
+                @"caption":"Acciones"
+            }
+        }
+    }
+
+    new def_linea
+    {
+        @"datatable*":@@(@crud_context,"&.")
+        @"datatable*":dbr.list(@("&database"),"select sys_pk, descripcion from linea order by sys_pk;",@null)
+        member "attributes"
+        {
+            @"class":"form-control selectLinea"
+        }
+        @"value_field":"sys_pk"
+        @"text_field":"descripcion"
+        @"selected":field.dstr(@('&parameters'),"linea","1") 
+        
+    }
+
+    new def_marca
+    {
+        @"datatable*":@@(@crud_context,"&.")
+        @"datatable*":dbr.list(@("&database"),"select sys_pk, descripcion from marca order by sys_pk;",@null)
+        member "attributes"
+        {
+            @"class":"form-control selectMarca"
+        }
+        @"value_field":"sys_pk"
+        @"text_field":"descripcion"
+        @"selected":field.dstr(@('&parameters'),"marca","0") 
+        @"first_value":0
+        @"first_text":"(Todas las marcas)"
+    }
+
+    new def_departamento
+    {
+        @"datatable*":@@(@crud_context,"&.")
+        @"datatable*":dbr.list(@("&database"),"select sys_pk, descripcion from departamento order by sys_pk;",@null)
+        member "attributes"
+        {
+            @"class":"form-control selectDepartamento"
+        }
+        @"value_field":"sys_pk"
+        @"text_field":"descripcion"
+        @"selected":field.dstr(@('&parameters'),"departamento","0") 
+        @"first_value":0
+        @"first_text":"(Todos los departamentos)"
+    }
+
+    new def_divisa
+    {
+        @"datatable*":@@(@crud_context,"&.")
+        @"datatable*":dbr.list(@("&database"),"select sys_pk, descripcion from divisa order by sys_pk;",@null)
+        member "attributes"
+        {
+            @"class":"form-control selectDivisa"
+        }
+        @"value_field":"sys_pk"
+        @"text_field":"descripcion"
+        @"selected":field.dstr(@('&parameters'),"divisa","1") 
+    }
+
+    #$
+    div(class="card p-2 justify-content-center")
+    {
+        div(class="card col-12 p-0")
+        {
+        div(class="container m-4")
+        {
+            div(class="row align-items-center")
+            {
+                
+                div(class="col")
+                {
+                    label(class="bg"){$"Linea de Productos:"}
+                    ##
+                        do uie.dbSelect(def_linea)
+                    ##
+                }
+
+                div(class="col")
+                {
+                    label(class="form-check-label") {$"Marca:"}
+                    ##
+                        do uie.dbSelect(def_marca)
+                    ##
+                }
+                div(class="col")
+                {
+                    label(class="form-check-label") {$"Departamento:"}
+                    ##
+                        do uie.dbSelect(def_departamento)
+                    ##
+                }
+                div(class="col")
+                {
+                    label(class="form-check-label") {$"Divisa:"}
+                    ##
+                        do uie.dbSelect(def_divisa)
+                    ##
+                }
+                div(class="col")
+                {
+                    label(class="w-100"){"Filtro(s):"}
+                    button(class="btn btn-primary" onclick="filtrar()"){"Aplicar"}
+                }
+                
+            }
+        }
+            
+            
+            div(class="card-header")
+            {
+                h5{$"Productos"}
+            }
+            div(class="m-3")
+            {
+                div(class="tab-content overflow-auto" )
+                {
+                    #!
+                    #include "producto.dk"
+                    #include "web/api.erp.test/core-apps/db-crudl/_common/list.dk"
+                }
+            }
+        }
+
+        #$
+        script
+        {
+            $"
+            
+       
+            function filtrar()
+            {
+                var linea = $('.selectLinea').val()
+                var marca = $('.selectMarca').val()
+                var departamento = $('.selectDepartamento').val()
+                var divisa = $('.selectDivisa').val()
+
+                window.location.href='./?linea='+linea+'&marca='+marca+'&departamento='+departamento+'&divisa='+divisa
+
+                
+                
+            }
+
+            // function mostrarOtrosFiltros() {
+            //     var element = document.getElementById('selectOtroFiltro');
+            //     var check = document.getElementById('filtroCheck');
+            //     if (check.checked) {
+            //         element.style.display='block';
+            //     }
+            //     else {
+            //         element.style.display='none';
+            //     }
+            // }
+
+            "
+        }
+    }
+
+    
+    
+    
+    do @context.end()
+}

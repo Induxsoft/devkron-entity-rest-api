@@ -1,0 +1,39 @@
+#include "dkli.dkh"
+#!
+
+module "list_view_tipo_cliente.dk"
+{
+	#include "functions.dkh"
+	#include "serialize.dkh"
+
+    do @context.begin(@crud_context)
+
+	ref @http_context=@("&http")
+	
+	new @table_definition
+    {
+    	@"datatable*":@("&.")
+    	member @"columns"
+        {
+        	member @"codigo"
+        	{
+        		@"caption":"Código"
+        	}
+        	member @"descripcion"
+        	{
+        		@"caption":"Descripción"
+        	}
+        	member @"_actions"
+        	{
+        		@"caption":"Acción"
+        	}
+        }
+    }
+    #$
+    div{
+    	#!
+        #include "tipocliente.dkl"
+    	#include "web/api.erp.test/core-apps/db-crudl/_common/list.dk"
+    }
+	do @context.end()
+}

@@ -1,0 +1,24 @@
+﻿#include "dkli.dkh"
+#!
+program
+{
+
+	#include "functions.dkh"
+	#include "serialize.dkh"
+	#include "webcl.dkh"
+	#include "webauth.dkl"
+	#include "fso/fso.config.dk"
+	#include "fso/fso.dk"
+
+	template="web/api.erp.test/_protected/default.htt"
+
+	if @@(@http_context,"request/get/_output")=="raw" { return }
+
+	http_method=toupper(@@(@http_context,"request/headers/request_method"))
+
+	expected_html=contains(tolower(replace(@@(@http_context,"request/headers/HTTP_ACCEPT")," ","")),"text/html")
+	
+	if not(expected_html) { return }
+
+	@http_context<"response/text">:ftext(file.rtext(template))
+}

@@ -1,0 +1,18 @@
+#include "dkli.dkh"
+#!
+
+module "categoria.dk"
+{
+	@list_query="select categoria.sys_pk, categoria.sys_recver, categoria.codigo,categoria.uf_inhabilitado, categoria.descripcion, ctiposcategorias.const ctiposcategorias from categoria inner join ctiposcategorias on tipo=ctiposcategorias.id
+     where tipo=@ctiposcategorias or isnull(@ctiposcategorias) order by codigo;"
+
+	@read_query="select #<@sys_fields>,codigo,descripcion,codcuenta,pmensual, tipo,uf_inhabilitado from categoria where #<@keyfield>=@_entity_id limit 1;"
+	
+	categoria.read::&db,&params
+	{
+		ref categoria=entity.read(db,params)
+		return categoria
+	}
+
+	point @read to categoria.read
+}

@@ -1,0 +1,10 @@
+#include "dkli.dkh"
+#!
+
+module "porteador.dk"
+{
+    @list_query="select #<@sys_fields>,codigo, descripcion,notas from porteador order by descripcion;"
+
+    @read_query="select #<@sys_fields>, codigo,descripcion,notas, iproveedor from #<@table_name> where #<@keyfield>=@_entity_id limit 1;"
+   
+}

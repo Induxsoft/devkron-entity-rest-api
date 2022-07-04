@@ -1,0 +1,40 @@
+#include "dkli.dkh"
+#!
+
+module "list.dk"
+{
+    #include "functions.dkh"
+
+    new @table_definition
+    {
+        @"datatable*":@@(@crud_context,"&.")
+        member @"columns"
+        {
+            member @"nombre"
+            {
+                @"caption":"Nombre"
+            }
+            member @"notas"
+            {
+                @"caption":"Notas"
+            }
+            member @"_actions"
+            {
+                @"caption":"Acciones"
+                
+            }
+        }
+    }
+
+    #$
+    div
+    {
+    	#!
+        #include "zona.dkl"
+    	
+        #include "web/api.erp.test/core-apps/db-crudl/_common/list.dk"
+    }
+
+    #!
+	do @context.end()
+}

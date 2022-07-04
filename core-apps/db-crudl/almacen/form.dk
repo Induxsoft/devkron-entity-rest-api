@@ -1,0 +1,70 @@
+#include "dkli.dkh"
+#!
+
+module "form_view_alamacen.dk"
+{
+	#include "functions.dkh"
+	#include "serialize.dkh"
+	#include "dbr.dkh"
+	
+	do @context.begin(@crud_context)
+
+	new def_pais
+    {
+        @"datatable*":dbr.list(@("&database"),"select sys_pk, codigo, descripcion from cconsumo order by descripcion;",@null)
+        member "attributes"
+        {
+            @"class":"form-control"
+            @"name":"centroconsumo"
+        }
+
+        @"text_field":"descripcion"
+        @"value_field":"sys_pk"
+        @"selected":@('./centroconsumo')
+    }
+	##
+	 // div{$"#<to.json(@('&.'))>"}
+	div(class="m-0 row justify-content-center" )
+	{
+		#!
+		#include "almacen.dkl"
+		#$
+		div(class="col-lg-6")
+		{
+			form(action="." method="POST")
+			{
+				label{"Código"}
+				input(type="text" class="form-control" id="codigo" name="codigo" value="#<@('./codigo')>")
+				label{"Descripción"}
+				input(type="text" class="form-control" id="descripcion" name="descripcion" value="#<@('./descripcion')>")
+				input(type="hidden" class="form-control" id="sys_recver" name="sys_recver" value="#<@('./sys_recver')>")
+				input(type="hidden" class="form-control" id="sys_pk" name="sys_pk" value="#<@('./sys_pk')>")
+				// button(class="btn btn-primary m-1"){"Guardar"}
+				// a(href="../" class="btn btn-danger m-1" ){"Cancelar"}
+			}
+			fieldset(class="form-control")
+			{
+				legend{"Domicilio"}
+				// label{"País"}
+				// label{"Estado"}
+				// label{"Ciudad"}
+				label{"Dirección:"}
+				input(type="text" id="direccion" class="form-control" value="#<@('./domicilio/direccion')>")
+				label{"Colonia:"}
+				input(type="text" id="colonia" class="form-control" value="#<@('./domicilio/colonia')>")
+				label{"Código postal:"}
+				input(type="number" id="codpos" class="form-control" value="#<@('./domicilio/codpos')>")
+				label{"Tel."}
+				input(type="tel" id="telefono" class="form-control" value="#<@('./domicilio/telefonos')>")
+				input(type="hidden" class="form-control" id="sys_recver_Dom" name="sys_recver" value="#<@('./domicilio/sys_recver')>")
+				//input(type="hidden" class="form-control" id="dom_sys_pk" name="dom_sys_pk" value="#<@('./domicilio/sys_pk')>")
+			}
+			button(class="btn btn-primary m-1" onclick="AddAlmacen()"){"Guardar"}
+			a(href="../" class="btn btn-danger m-1" ){"Cancelar"}
+		}
+		
+	}
+	
+	##
+	do @context.end()
+}

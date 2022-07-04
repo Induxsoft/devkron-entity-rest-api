@@ -1,0 +1,264 @@
+#include "dkli.dkh"
+#!
+
+module "form.dk"
+{
+	#include "functions.dkh"
+	#include "serialize.dkh"
+	#include "dbr.dkh"
+    #include "uielements.dkl"
+
+	do @context.begin(@crud_context)
+
+	new def_pais
+    {
+        @"datatable*":dbr.list(@("&database"),"select sys_pk, codigotel, nombre from pais order by nombre;",@null)
+        member "attributes"
+        {
+            @"class":"form-control pais"
+        }
+        @"value_field":"sys_pk"
+        @"text_field":"nombre"
+    }
+
+	##
+    div(class = "d-flex justify-content-center")
+		{
+            #!
+            #include "cajero.dk"
+            #$
+			div(class= "w-50 mt-4")
+			{
+                div(class="card")
+                {
+                    p{$"#<@('error/message')>"}
+                    div(class= "card-body")
+                    {	
+                        form(action="." method="POST")
+                        {
+                            div(class="mb-3 row")       
+                            {
+                                div(class="col-sm-6")
+                                {
+                                    label{"Código"}
+									input(type="text" class="form-control" id="codigo" name="codigo" value="#<@('./codigo')>")
+                                }
+                                div(class="col-sm-6")
+                                {
+									label{"Contraseña"}
+									input(type="text" name="contrasena" class="form-control" id="contrasena" value="#<@('./contrasena')>")
+								}
+                                div(class="col-sm-6")
+                                {
+                                    label{"Nombre:"}
+									input(type="text" class="form-control" id="nombre" name="nombre" value="#<@('./nombre')>")
+                                }  
+                                
+                                fieldset(class="form-control")
+                                {
+                                    
+                                    legend{"Domicilio"}
+                                    div(class="card")
+                                    {
+                                        
+                                        div(class="card-body")
+                                        {
+                                            div(class="mb-3 row")       
+                                            {
+                                                div(class="col-sm-6")
+                                                {
+                                                    label(class="form-label"){"País"}
+                                                    ##
+                                                        do uie.dbSelect(def_pais)
+                                                    ##
+                                                }
+                                                div(class="col-sm-6")
+                                                {
+                                                    label(class="form-label"){"Estado"}
+                                                    select(class="form-control" id="estado"){$""}
+                                                }
+                                                
+                                            }
+                                            div(class="mb-3 row")       
+                                            {
+                                                div(class="col-sm-6")
+                                                {
+                                                    label(class="form-label"){"Ciudad"}
+                                                    
+                                                    select(class="form-control" id="ciudad"){$""}
+                                                }
+                                                div(class="col-sm-6")
+                                                {
+                                                    label(class="form-label"){"Colonia"}
+                                                    input(type="text" class="form-control" id="colonia" value="#<@('./domicilio/colonia')>")
+                                                } 
+                                            }
+                                            div(class="mb-3")       
+                                            {
+                                                label(class="form-label"){"Dirección"}
+                                                input(type="text" id="direccion" class="form-control"  value="#<@('./domicilio/direccion')>")
+                                            }
+                                            div(class="mb-3 row")       
+                                            {      
+                                                div(class="col-sm-6")
+                                                {
+                                                    label(class="form-label"){"Código postal"}
+                                                    input(type="text" class="form-control" id="codpos" value="#<@('./domicilio/codpos')>")
+                                                } 
+                                                div(class="col-sm-6")
+                                                {
+                                                    label(class="form-label"){"Teléfono"}
+                                                    input(type="text" class="form-control" id="telefono" value="#<@('./domicilio/telefonos')>")
+                                                }
+                                            }
+                                        }                                   
+                                    }
+                                    input(type="hidden" class="form-control" id="sys_recver_Dom" name="sys_recver" value="#<@('./domicilio/sys_recver')>")
+                                    input(type="hidden" class="form-control" id="dom_sys_pk" name="dom_sys_pk" value="#<@('./domicilio/sys_pk')>")
+                                }
+                                div(class="col-sm-6")
+                                {
+									label{"Email"}
+									input(type="email" class="form-control" id="email" name="email" value="#<@('./email')>")
+								}
+								div(class="col-sm-6")
+                                {
+									label{"Código de Nómina"}
+									input(type="text" name="codnomina" id="codnomina" class="form-control" value="#<@('./codnomina')>")
+								}
+								div(class="col-sm-6")
+                                {
+									label{"Notas"}
+									input(type="email" class="form-control" id="notas" name="notas" value="#<@('./notas')>")
+								}
+								
+                            }
+                            input(type="hidden" class="form-control" id="sys_recver" name="sys_recver" value="#<@('./sys_recver')>")
+				            input(type="hidden" class="form-control" id="sys_pk" name="sys_pk" value="#<field.dstr(@('&./'),'sys_pk',0)>")
+                        }
+
+                                                
+                            div(class="text-center pt-4")
+                            {
+								
+                                button(onclick="addcajero()" class="btn btn-primary m-1"){"Guardar"}
+                                a(class="btn btn-danger m-1" href="../" ){"Cancelar"}
+                            }
+                    }
+                }
+            }
+
+             #$
+            script
+            {
+                $"
+
+                var selectPais = document.getElementsByClassName('pais')[0];
+                var selectEstado = document.getElementById('estado');
+                var selectCiudad = document.getElementById('ciudad');
+
+                
+                $(selectPais).change( ()=>{
+                    $('#estado').empty();
+                    $('#ciudad').empty();
+                    listarEstados(e=>{
+                        $('#estado').change();
+                    });
+                });
+
+
+                $(selectEstado).change( ()=>{
+                    $('#ciudad').empty();
+                    listarCiudades(e=>{
+                        //console.log('kisya');
+                    });
+                })
+                
+                function listarEstados(a)
+                {
+                    var paisSeleccionado = $(selectPais).val();
+                    var urlPaisSeleccionado = 'http://api.erp.test/MaxiComercio.R5/pruebaIndux/edoprov/?pais='+paisSeleccionado
+                    $.ajax({
+                            type: 'GET',
+                            dataType: 'json',
+                            accepts: 'application/json',
+                            url: urlPaisSeleccionado,
+                            
+                            success: function(data) {
+                                const temp3 = data;
+                                $.each(temp3, function(sys_pk, nombre) {
+                                    $('#estado').append('<option value=' + nombre.sys_pk + '>' + nombre.nombre + '</option>');
+                                });
+                                a();
+                            },
+                            error: function(error){
+                                console.log(error);
+                            }        
+                        });
+                }
+
+                function listarCiudades(b)
+                {
+                    var estadoSeleccionado = $(selectEstado).val();
+                    var urlEstadoSeleccionado = 'http://api.erp.test/MaxiComercio.R5/pruebaIndux/ciudad/?edo='+estadoSeleccionado
+
+                    $.ajax({
+                    type: 'GET',
+                     dataType: 'json',
+                     accepts: 'application/json',
+                     url: urlEstadoSeleccionado,
+                    
+                        success: function(data) {
+                            const temp4 = data;
+                            $.each(temp4, function(sys_pk, nombre) {
+                                $('#ciudad').append('<option value=' + nombre.sys_pk + '>' + nombre.nombre + '</option>');
+                            });
+                            b();
+                        },
+                        error: function(error){
+                            console.log(error);
+                        }
+                    });
+                }
+
+
+                
+               $( document ).ready(function() {
+                if('#<@('./domicilio/iciudad')>' =='')
+                {
+                    console.log('no hay domicilio');
+                    $(selectPais).val('1');
+                    listarEstados(e=>{
+                        $(selectEstado).val('7');
+                        listarCiudades(e=>{
+                            $(selectCiudad).val('396');
+                        });
+                    });
+                }
+                else
+                {
+                    $(selectPais).val('#<@('./estado/IPais')>');
+                    listarEstados(e=>{
+                        $(selectEstado).val('#<@('./estado/sys_pk')>');
+                        listarCiudades(e=>{
+                            $(selectCiudad).val('#<@('./domicilio/iciudad')>');
+                        });
+                    });
+                }
+                    
+
+
+
+                });
+
+
+             
+
+      
+                "
+            }
+            ##
+        }
+        ##
+        do @context.end()
+}

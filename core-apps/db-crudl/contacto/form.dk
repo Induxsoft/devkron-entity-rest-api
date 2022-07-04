@@ -1,0 +1,132 @@
+#include "dkli.dkh"
+#!
+
+module "form.dk"
+{
+    #include "functions.dkh"
+    #include "serialize.dkh"
+    #include "dbr.dkh"
+    #include "uielements.dkl"
+
+    do @context.begin(@crud_context)
+
+    new def_pais
+    {
+        @"datatable*":dbr.list(@("&database"), "select sys_pk, concat(nombre,' (',codigotel,')') as nombre from pais order by nombre", @null)
+        member "attributes"
+        {
+            @"class":"form-control"
+            @"name":"pais"
+        }
+        @"text_field":"nombre"
+        @"value_field":"sys_pk"
+        @"selected":@('./pais/sys_pk')
+    }
+    new def_estado
+    {
+        @"datatable*":dbr.list(@("&database"), "select sys_pk, nombre from edoprov order by nombre", @null)
+        member "attributes"
+        {
+            @"class":"form-control"
+            @"name":"edoprov"
+        }
+        @"text_field":"nombre"
+        @"value_field":"sys_pk"
+        @"selected":@('./estado/sys_pk')
+    }
+    new def_ciudad
+    {
+        @"datatable*":dbr.list(@("&database"), "select sys_pk, concat(nombre,' (',codigotel,')') as nombre from ciudad order by nombre", @null)
+        member "attributes"
+        {
+            @"class":"form-control"
+            @"name":"domicilio_ciudad"
+        }
+        @"text_field":"nombre"
+        @"value_field":"sys_pk"
+        @"selected":@('./ciudad/sys_pk')
+    }
+
+    metodo = "POST" 
+    if(parse.num(@('./sys_pk'))>0){metodo="PUT"}
+
+    #$
+    div(class="m-0 row justify-content-center")
+    {
+        p{$"#<method>"}
+        #!
+        if @('error/message') != "" { #$ div(class="alert alert-danger"){$"#<@('error/message')>"}}
+        #$
+        form(action="." method="POST" class="col-lg-6")
+        {
+            
+            div(class="card p-3")
+            {
+                
+                div(class="card-header")
+                {
+                    h5{$"General"}
+                }
+                label{"Tratamiento"}
+                input(type="text" name="tratamiento" class="form-control" value="#<@('./tratamiento')>")
+                label{"Nombre:"}
+                input(type="text" name="nombre" class="form-control" value="#<@('./nombre')>" required="true")
+                label{"Apellidos:"}
+                input(type="text" name="apellidos" class="form-control" value="#<@('./apellidos')>" required="true")
+                label{"Empresa:"}
+                input(type="text" name="empresa" class="form-control" value="#<@('./empresa')>")
+                label{"Puesto:"}
+                input(type="text" name="puesto" class="form-control" value="#<@('./puesto')>")
+                label{"Teléfono:"}
+                input(type="text" name="tel1" class="form-control" value="#<@('./tel1')>")
+                label{"Correo electrónico:"}
+                input(type="text" name="email1" class="form-control" value="#<@('./email1')>")
+                label{"Sitio Web:"}
+                input(type="text" name="website" class="form-control" value="#<@('./website')>")
+                input(type="hidden" class="form-control" name="sys_pk" value="#<@('./sys_pk')>")
+                input(type="hidden" name="sys_recver" value="#<@('./sys_recver')>")
+                //input(type="hidden" class="form-control" name="method" value="#<metodo>")
+
+                div(class="card mt-4 p-2")
+                {
+                    div(class="card-header bg-transparent")
+                    {
+                        h6{$"Domicilio particular"}
+                    }
+                    label{"País:"}
+                    #!
+                    do uie.dbSelect(def_pais)
+                    #$
+                    label{"Estado:"}
+                    #!
+                    do uie.dbSelect(def_estado)
+                    #$
+                    label{"Ciudad:"}
+                    #!
+                    do uie.dbSelect(def_ciudad)
+                    #$
+                    label{"Dirección:"}
+                    input(type="text" name="domicilio_direccion" class="form-control " value="#<@('./domicilio/direccion')>")
+                    label{"Colonia:"}
+                    input(type="text" name="domicilio_colonia" class="form-control" value="#<@('./domicilio/colonia')>")
+                    label{"Código Postal:"}
+                    input(type="text" name="domicilio_codpos" class="form-control" value="#<@('./domicilio/codpos')>")
+                    label{"Tel:"}
+                    input(type="text" name="domicilio_telefonos" class="form-control" value="#<@('./domicilio/telefonos')>")
+                    input(type="hidden" name="domicilio_sys_recver" value="#<@('./sys_recver')>")
+                }
+            }
+            
+            
+
+
+            //textarea(name="notas" class="form-control" value="#<@('./notas')>"){$'#<@("./notas")>'}
+            
+            button(type="submit" class="btn btn-primary m-1"){"Guardar"}
+            a(href="../" class="btn btn-danger m-1"){"Cancelar"}
+        }
+    }
+
+    #!
+    do @context.end()
+}

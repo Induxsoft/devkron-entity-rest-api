@@ -1,0 +1,26 @@
+#include "dkli.dkh"
+#!
+
+module "crudl.dkl"
+{
+	#include "functions.dkh"
+    #include "serialize.dkh"
+    #include "webauth.dkl"
+    #include "dbr.dkh"
+    #include "cookies.dkl"
+
+
+    token=auth.token()
+    
+	if token!=""
+	{
+        ref db=dbr.reconnect("BdR8_MXCR5@MaxiComercio.R5",token)
+
+        do dbr.logout(db)
+        exception{}
+    }
+
+    @http_context<"response/headers/Location">:"/login.dkl"
+
+    
+}

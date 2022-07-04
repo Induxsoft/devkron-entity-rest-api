@@ -1,0 +1,58 @@
+#include "dkli.dkh"
+#!
+
+module "list_view_almacen.dk"
+{
+	#include "functions.dkh"
+	#include "serialize.dkh"
+	
+	do @context.begin(@crud_context)
+
+	ref @http_context=@("&http")
+	
+	/*
+	. ->output  if error->input
+	output ->modelo
+	input - > payload (datos de entrada)
+	parameters -> los del get url  
+	error -> (Si hay un error !=null)
+	database ->Conexión a la base de datos
+	http -> @http_context (del origen)
+	*/
+	new @table_definition
+    {
+    	@"datatable*":@("&.")
+    	member @"columns"
+        {
+        	member @"codigo"
+        	{
+        		@"caption":"Código"
+        	}
+        	member @"descripcion"
+        	{
+        		@"caption":"Descripción"
+        	}
+        	member @"codcuenta"
+        	{
+        		@"caption":"Codigo Cuenta"
+        	}
+        	member @"_actions"
+        	{
+        		@"caption":"Acción"
+        	}
+        }
+    }
+    #$
+    div(class="m-0 row justify-content-center" )
+	{
+		div(class="col-lg-12")
+		{
+			#!
+			#include "almacen.dkl"
+    		#include "web/api.erp.test/core-apps/db-crudl/_common/list.dk"
+		}
+		
+	}
+   
+	do @context.end()
+}

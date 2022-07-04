@@ -1,7 +1,0 @@
-#include "dkli.dkh"
-#!
-
-module "controller.almacen.dk"
-{
-	@form_view="form.jsnwm$form" //almacen.jsnwm$form
-}

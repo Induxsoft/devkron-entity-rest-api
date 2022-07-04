@@ -1,0 +1,27 @@
+#include "dkli.dkh"
+#!
+
+module "form.dk"
+{
+    #include "functions.dkh"
+    do @context.begin(@crud_context)
+    #$
+    div
+    {
+        div(class="alert aler-danger"){$"#<@('error/message')>"}
+        form(action="." method="POST")
+        {
+            label{"Código"}
+            input(type="text" name="uf_codigo" class="form-control" value="#<@('./uf_codigo')>" required="true")
+            label{"Nombre"}
+            input(type="text" name="uf_nombre" class="form-control" value="#<@('./uf_nombre')>" required="true")
+            label{"Ciudad"}
+            input(type="text" name="uf_ciudad" class="form-control" value="#<@('./uf_ciudad')>")
+            label{"Notas"}
+            textarea(name="uf_notas" class="form-control" value="#<@('./uf_notas')>"){$'#<@("./uf_notas")>'}
+            input(type="hidden" name="sys_recver" value="#<@('./sys_recver')>")
+            button(type="submit" class="btn btn-primary m-1"){"Guardar"}
+            a(href="../" class="btn btn-danger m-1"){"Cancelar"}
+        }
+    }
+}

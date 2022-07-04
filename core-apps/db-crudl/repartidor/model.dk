@@ -1,0 +1,70 @@
+#include "dkli.dkh"
+#!
+module "repartidor.dk"
+{
+    @read_query="select 
+        sys_pk, sys_guid, sys_recver, sys_timestamp, sys_dtcreated, sys_deleted, 
+        codigo, codnomina, email, nombre, telefono,notas, domicilio1
+        from repartidor where #<@keyfield>=@_entity_id limit 1;"
+
+    repartidor.read::&db,&params
+    {
+        ref repartidor=entity.read(db,params)
+        repartidor<"domicilio*">:dbr.rec(db,"select codpos,colonia,direccion,notas,telefonos,sys_pk,sys_recver,iciudad from domicilio where sys_pk=@domicilio1",repartidor)
+        repartidor<"ciudad*">:dbr.rec(db,"select codigo,codigotel,nombre,sys_pk,sys_recver,Estado from ciudad where sys_pk=@iciudad",@@(repartidor,"&domicilio"))
+        repartidor<"estado*">:dbr.rec(db,"select codigo,nombre,IPais,sys_pk,sys_recver from edoprov where sys_pk=@estado",@@(repartidor,"&ciudad"))
+        repartidor<"pais*">:dbr.rec(db,"select codigo,codigotel,nombre,sys_pk,sys_recver from pais where sys_pk=@IPais",@@(repartidor,"&estado"))
+        return  repartidor
+    }
+
+
+    repartidor.create::&db,&params,&data
+    {
+    	@use_transaction=@false
+		data<"sys_recver">:parse.num(@@(data,"#sys_recver"))
+		data<"sys_pk">:parse.num(@@(data,"#sys_pk"))
+    	do dbr.begin(db)
+    		if not(isnull(@@(data,"&domicilio")))
+	        {
+				data<"domicilio/sys_recver">:parse.num(@@(data,"#domicilio/sys_recver"))
+	            ref domicilio=dbr.save(db,"domicilio",@@(data,"&domicilio"))
+	            data<"domicilio1">:@@(domicilio,"sys_pk")
+	            do field.remove(data,"domicilio")
+	        }
+	        if not(isnull(@@(data,"&ciudad"))){do field.remove(data,"ciudad")}
+	        if not(isnull(@@(data,"&estado"))){do field.remove(data,"estado")}
+	        if not(isnull(@@(data,"&pais"))){do field.remove(data,"pais")}
+	        ref res= entity.create(db,params,data)
+    	do dbr.commit(db)
+    	return res
+    	exception
+    	{
+    		if dbr.in_transaction(db) {do dbr.rollback(db)}
+    		do rise_error(500,last_error())
+    	}
+    }
+
+    repartidor.update::&db,&params,&data
+    {
+    	if not(isnull(@@(data,"&domicilio")))
+    	{
+    		ref domicilio=dbr.save(db,"domicilio",@@(data,"&domicilio"))
+            data<"domicilio1">:@@(domicilio,"sys_pk")
+            do field.remove(data,"domicilio")
+    	}
+    	return entity.update(db,params,data)
+    }
+
+	repartidor.delete::&db,&params
+    {	
+        @keyfield="sys_pk"
+        ref repartidor=entity.read(db,params)
+        do dbr.delete(db,@table_name,"sys_pk=@_entity_id",params)
+        do dbr.delete(db,"domicilio","sys_pk=@domicilio1",repartidor)
+    }
+
+    point @read to repartidor.read
+    point @create to repartidor.create
+    point @update to repartidor.update
+	point @delete to repartidor.delete
+}

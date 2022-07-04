@@ -1,0 +1,7 @@
+#include "dkli.dkh"
+#!
+
+module "proveedor.dk"{
+    @read_query = "select #<@sys_fields> codigo,nombre,rfc,domicilio1,telefonos,email,saldo,izona from proveedor;
+    where #<@keyfield>=@_entity_id limit 1;"
+}

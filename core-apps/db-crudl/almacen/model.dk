@@ -1,0 +1,107 @@
+#include "dkli.dkh"
+#!
+
+module "almacen.dk"
+{
+    @read_query="select 
+        sys_pk, sys_guid, sys_recver, sys_timestamp, sys_dtcreated, sys_deleted, 
+        codigo,codcuenta, 
+        descripcion, email,telefonos,domicilio1
+        from almacen where #<@keyfield>=@_entity_id limit 1;"
+
+
+	almacen.read::&db,&params
+    {
+        ref almacen=entity.read(db,params)
+        almacen<"domicilio*">:dbr.rec(db,"select codpos,colonia,direccion,notas,telefonos,sys_pk,sys_recver,iciudad from domicilio where sys_pk=@domicilio1",almacen)
+        almacen<"ciudad*">:dbr.rec(db,"select codigo,codigotel,nombre,sys_pk,sys_recver,Estado from ciudad where sys_pk=@iciudad",@@(almacen,"&domicilio"))
+        almacen<"estado*">:dbr.rec(db,"select codigo,nombre,IPais,sys_pk,sys_recver from edoprov where sys_pk=@estado",@@(almacen,"&ciudad"))
+        almacen<"pais*">:dbr.rec(db,"select codigo,codigotel,nombre,sys_pk,sys_recver from pais where sys_pk=@IPais",@@(almacen,"&estado"))
+        return  almacen
+    }
+    almacen.create::&db,&params,&data
+    {
+    	@use_transaction=@false
+
+		// if field.exist(data,"domicilio_direccion")
+		// {
+		// 	new dom
+		// 	{
+		// 		@"direccion":@@(data,"domicilio_direccion")
+
+		// 	}
+		// 	do field.remove(data,"domicilio_direccion")
+
+		// 	data<"domicilio*">:dom
+		// }
+        // ref data1=from.json(data)
+        // do rise_error(-99,to.json(data))
+		// ref domi=entity.read(db,params)
+		// if isnull(@@(domi,"idomicilio")){
+		// 	ref domicilio=dbr.save(db,"domicilio",@@(data,"&domicilio"))
+		// }
+    	do dbr.begin(db)
+    		if not(isnull(@@(data,"&domicilio")))
+	        {
+				data<"domicilio/sys_recver">:parse.num(@@(data,"#domicilio/sys_recver"))
+	            ref domicilio=dbr.save(db,"domicilio",@@(data,"&domicilio"))
+	            data<"domicilio1">:@@(domicilio,"sys_pk")
+	             do field.remove(data,"domicilio")
+	        }
+	        if not(isnull(@@(data,"&ciudad"))){do field.remove(data,"ciudad")}
+	        if not(isnull(@@(data,"&estado"))){do field.remove(data,"estado")}
+	        if not(isnull(@@(data,"&pais"))){do field.remove(data,"pais")}
+                //  do rise_error(-99,to.json(@@(data,"&domicilio")))
+	           ref res= entity.create(db,params,data)
+    	do dbr.commit(db)
+   
+    	return res
+    	exception
+    	{
+    		if dbr.in_transaction(db) {do dbr.rollback(db)}
+    		do rise_error(500,last_error())
+    	}
+    }
+    almacen.delete::&db,&params
+    {	
+         // do rise_error(-99,to.json(params))
+    	@keyfield="sys_pk"
+    	 
+    	 ref almacen=entity.read(db,params)
+    	 do dbr.delete(db,@table_name,"sys_pk=@_entity_id",params)
+    	 do dbr.delete(db,"domicilio","sys_pk=@domicilio1",almacen)
+        
+    }
+    almacen.update::&db,&params,&data
+    {
+    	if not(isnull(@@(data,"&domicilio")))
+    	{
+    		ref domicilio=dbr.save(db,"domicilio",@@(data,"&domicilio"))
+            data<"domicilio1">:@@(domicilio,"sys_pk")
+            do field.remove(data,"domicilio")
+    	}
+    	return entity.update(db,params,data)
+    }
+
+	entity.blank::&db,&params
+	{
+		new r
+		{
+			@"descripcion":"Nombre del almacén"
+		}
+
+		return r
+	}
+	/*almacen.blank::&db,&params
+	{
+
+	
+	}*/
+
+	//point @blank to almacen.blank
+    point @read to almacen.read
+    point @create to almacen.create
+    point @delete to almacen.delete
+    // ref @delete=@null
+    point @update to almacen.update
+}

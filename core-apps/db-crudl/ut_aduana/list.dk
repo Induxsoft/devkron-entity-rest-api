@@ -1,0 +1,48 @@
+#include "dkli.dkh"
+#!
+
+module "list.dk"
+{
+    #include "functions.dkh"
+
+    new @table_definition
+    {
+        @"datatable*":@@(@crud_context,"&.")
+        member @"columns"
+        {
+            member @"uf_codigo"
+            {
+                @"caption":"Código"
+            }
+            member @"uf_nombre"
+            {
+                @"caption":"Nombre"
+            }
+            member @"uf_ciudad"
+            {
+                @"caption":"Ciudad"
+            }
+            member @"uf_notas"
+            {
+                @"caption":"Notas"
+            }
+            member @"_actions"
+            {
+                @"caption":"Acciones"
+                
+            }
+        }
+    }
+    
+    #$
+    div
+    {
+    	#!
+        #include "ut_aduana.dkl"
+    	
+        #include "web/api.erp.test/core-apps/db-crudl/_common/list.dk"
+    }
+
+    #!
+	do @context.end()
+}

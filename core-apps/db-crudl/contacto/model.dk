@@ -1,0 +1,109 @@
+#include "dkli.dkh"
+#!
+module "contacto.dk"{
+    
+    @list_query="select c.sys_pk, c.sys_guid, c.sys_recver, c.sys_timestamp, c.sys_dtcreated, c.sys_deleted, 
+    c.Tratamiento,c.Nombre,c.Apellidos,c.Empresa,c.Puesto,c.Tel1,c.eMail1,c.WebSite,concat(d.direccion,', ',d.colonia,', ',cd.nombre) as domicilio
+    from contacto c 
+    inner join domicilio d on c.domicilio1 = d.sys_pk
+    inner join ciudad cd on d.iciudad = cd.sys_pk;"
+
+    @read_query = "select sys_pk, sys_guid, sys_recver, sys_timestamp, sys_dtcreated, sys_deleted, 
+    tratamiento,nombre,apellidos,empresa,puesto,tel1,email1,website,domicilio1
+    from contacto where #<@keyfield>=@_entity_id limit 1;"
+    
+    contacto.read::&db,&params{
+        ref contacto=entity.read(db,params)
+        contacto<"domicilio*">:dbr.rec(db,"select codpos,colonia,direccion,notas,telefonos,sys_pk,sys_recver,iciudad from domicilio where sys_pk=@domicilio1",contacto)
+        contacto<"ciudad*">:dbr.rec(db,"select codigo,codigotel,nombre,sys_pk,sys_recver,Estado from ciudad where sys_pk=@iciudad",@@(contacto,"&domicilio"))
+        contacto<"estado*">:dbr.rec(db,"select codigo,nombre,IPais,sys_pk,sys_recver from edoprov where sys_pk=@estado",@@(contacto,"&ciudad"))
+        contacto<"pais*">:dbr.rec(db,"select codigo,codigotel,nombre,sys_pk,sys_recver from pais where sys_pk=@IPais",@@(contacto,"&estado"))
+        return contacto
+    }
+    contacto.create::&db,&params,&data{
+        
+    	@use_transaction=@false
+    	do dbr.begin(db) 
+
+        if field.exist(data, "domicilio_direccion")
+        {
+            new dom
+            {
+                @"direccion":field.dstr(data,"domicilio_direccion",@null)
+                @"colonia":field.dstr(data,"domicilio_colonia",@null)
+                @"codpos":field.dstr(data,"domicilio_codpos",@null)
+                @"telefonos":field.dstr(data,"domicilio_telefonos",@null)
+                @"iciudad":field.dstr(data,"domicilio_ciudad",@null)
+                //@"sys_recver":field.dstr(data,"domicilio_sys_recver",@null)
+            }
+            do field.remove(data,"domicilio_direccion")
+            do field.remove(data,"domicilio_colonia")
+            do field.remove(data,"domicilio_codpos")
+            do field.remove(data,"domicilio_telefonos")
+            do field.remove(data,"domicilio_ciudad")
+            do field.remove(data,"domicilio_sys_recver")
+
+            data<"domicilio*">:dom
+        }
+        //do rise_error(501,to.json(data))
+        if not(isnull(@@(data,"&domicilio"))){
+            ref domicilio=dbr.save(db,"domicilio",@@(data,"&domicilio")) 
+            
+            data<"domicilio1">:@@(domicilio,"sys_pk")
+            do field.remove(data,"domicilio")
+        }
+
+        do field.remove(data,"pais")
+        do field.remove(data,"edoprov")
+        
+	    ref res= entity.create(db,params,data)
+    	do dbr.commit(db)
+
+    	return res
+    	exception
+    	{
+    		if dbr.in_transaction(db) { do dbr.rollback(db) }
+    		do rise_error(500,last_error())
+    	}
+    }
+
+    contacto.update::&db,&params,&data
+    {
+        if field.exist(data, "domicilio_direccion")
+        {
+            new dom
+            {
+                @"direccion":field.dstr(data,"domicilio_direccion",@null)
+                @"colonia":field.dstr(data,"domicilio_colonia",@null)
+                @"codpos":field.dstr(data,"domicilio_codpos",@null)
+                @"telefonos":field.dstr(data,"domicilio_telefonos",@null)
+                @"iciudad":field.dstr(data,"domicilio_ciudad",@null)
+                @"sys_recver":field.dstr(data,"domicilio_sys_recver",@null)
+            }
+            do field.remove(data,"domicilio_direccion")
+            do field.remove(data,"domicilio_colonia")
+            do field.remove(data,"domicilio_codpos")
+            do field.remove(data,"domicilio_telefonos")
+            do field.remove(data,"domicilio_ciudad")
+            do field.remove(data,"domicilio_sys_recver")
+
+            data<"domicilio*">:dom
+        }
+        
+    	if not(isnull(@@(data,"&domicilio")))
+    	{
+    		ref domicilio=dbr.save(db,"domicilio",@@(data,"&domicilio"))
+            data<"domicilio1">:@@(domicilio,"sys_pk")
+            do field.remove(data,"domicilio")
+    	}
+
+        do field.remove(data,"pais")
+        do field.remove(data,"edoprov")
+    	
+        return entity.update(db,params,data)
+    }
+
+    point @read to contacto.read
+    point @create to contacto.create
+    point @update to contacto.update
+}

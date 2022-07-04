@@ -1,0 +1,199 @@
+#include "dkli.dkh"
+#!
+
+module "list_view_contacto.dk"
+{
+	#include "functions.dkh"
+	#include "serialize.dkh"
+    #include "dbr.dkh"
+    #include "uielements.dkl"
+
+    do @context.begin(@crud_context)
+
+	ref @http_context=@("&http")
+	
+    new def_tipo_cliente
+    {
+        @"datatable*":dbr.list(@("&database"), "select sys_pk, descripcion from tipocliente order by sys_pk", @null)
+        member "attributes"
+        {
+            @"class":"form-control tipocliente"
+            @"name":"tipocliente"
+        }
+        @"text_field":"descripcion"
+        @"value_field":"sys_pk"
+        @"selected":field.dstr(@('&parameters'),"tc_id","1")
+    }
+
+	new @table_definition
+    {
+    	@"datatable*":@("&.")
+    	member @"columns"
+        {
+        	member @"codigo"
+        	{
+        		@"caption":"Código"
+        	}
+        	member @"nombre"
+        	{
+        		@"caption":"Nombre"
+        	}
+            member @"rfc"
+        	{
+        		@"caption":"RFC"
+        	}
+            member @"direccion"
+        	{
+        		@"caption":"Dirección"
+        	}
+            member @"colonia"
+        	{
+        		@"caption":"Colonia"
+        	}
+            member @"codpos"
+        	{
+        		@"caption":"Código postal"
+        	}
+            member @"telefonos"
+        	{
+        		@"caption":"teléfono"
+        	}
+            member @"email"
+        	{
+        		@"caption":"eMail"
+        	}
+            member @"saldo"
+        	{
+        		@"caption":"Saldo"
+        	}
+            member @"acuerdos_pendientes"
+        	{
+        		@"caption":"Acuerdos pendientes"
+        	}
+            member @"pais"
+        	{
+        		@"caption":"País"
+        	}
+            member @"estado"
+        	{
+        		@"caption":"Estado"
+        	}
+            member @"ciudad"
+        	{
+        		@"caption":"Ciudad"
+        	}
+            member @"zona"
+        	{
+        		@"caption":"Zona"
+        	}
+            member @"tipo_cliente"
+        	{
+        		@"caption":"Tipo de cliente"
+        	}
+            member @"agente"
+        	{
+        		@"caption":"Agente"
+        	}
+        	member @"_actions"
+        	{
+        		@"caption":"Acción"
+        	}
+        }
+    }
+
+    #$
+    div(class="card p-2 justify-content-center")
+    {
+        div(class="row ms-4 me-4 mb-2")
+        {
+            div(class="form-group p-0 col-11")
+            {
+                input(class="form-control" type="search" placeholder="Search" "aria-label"="Search")
+            }
+            div(class="form-group p-0 col-1")
+            {
+                button(class="btn btn-primary" type="submit"){$"Buscar"}
+            }
+        }
+        div(class="col-2 ms-4 me-4 mt-2")
+        {
+            label{$"Tipos de clientes:"}
+            #!
+            do uie.dbSelect(def_tipo_cliente)
+            #$
+            label{$"Clientes:"}
+            select(name="clientes" class="clientes")
+            {
+                option(value="1"){$"Todos los clientes"}
+                option(value="2"){$"Clientes con saldo"}
+                option(value="3"){$"Clientes sin saldo"}
+                option(value="4"){$"Clientes con acuerdos de pago"}
+            }
+            button(class="btn btn-primary" onclick="refresh();"){$"Aplicar"}
+        }
+        #$
+        div(class="row ms-4 me-4 mt-2")
+        {
+            // TIPOS DE CLIENTES
+            // div(class="card col-2 p-0")
+            // {
+            //     div(class="card-header")
+            //     {
+            //         h6{$"Tipos de clientes"}
+            //     }
+            // }
+
+            // CLIENTES
+            div(class="card col-12 p-0")
+            {
+                div(class="card-header")
+                {
+                    h6{$"Clientes"}
+                }
+                div(class="m-3")
+                {
+                    // nav
+                    // {
+                    //     div(class="nav nav-tabs" id="nav-tab" role="tablist")
+                    //     {
+                    //         a(class="nav-item nav-link active" id="nav-all-tab" "data-toggle"="tab" href="#" role="tab" "aria-controls"="nav-all" "aria-selected"="false"){$"Todos los clientes"}
+                    //         a(class="nav-item nav-link" id="nav-with-credit-tab" "data-toggle"="tab" href="#" role="tab" "aria-controls"="nav-with-credit" "aria-selected"="false"){$"Clientes con saldo"}
+                    //         a(class="nav-item nav-link" id="nav-no-credit-tab" "data-toggle"="tab" href="#" role="tab" "aria-controls"="nav-no-credit" "aria-selected"="false"){$"Clientes sin saldo"}
+                    //         a(class="nav-item nav-link" id="nav-payment-tab" "data-toggle"="tab" href="#" role="tab" "aria-controls"="nav-payment" "aria-selected"="false"){$"Clientes con acuerdos de pago"}
+                    //     }
+                    // }
+                    div(class="tab-content overflow-auto")
+                    {
+                        #!
+                        #include "web/api.erp.test/core-apps/db-crudl/_common/list.dk"
+                    }
+                }
+            }
+        }
+        #$
+        script{$'
+            function refresh()
+            {
+                client_param = "";
+                switch($(".clientes").val())
+                {
+                    case "1":
+                        client_param = "&client=1"
+                        break;
+                    case "2":
+                        client_param = "&client=2"
+                        break;
+                    case "3":
+                        client_param = "&client=3"
+                        break;
+                    case "4":
+                        client_param = "&client=4"
+                        break;
+                }
+                window.location.href="./?tc_id="+$(".tipocliente").val()+client_param;
+            }
+        '}
+    }
+    #!
+	do @context.end()
+}

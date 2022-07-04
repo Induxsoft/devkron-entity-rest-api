@@ -1,0 +1,52 @@
+#include "dkli.dkh"
+#!
+
+module "form.dk"
+{
+    #include "functions.dkh"
+    #include "dbr.dkh"
+    #include "uielements.dkl"
+    do @context.begin(@crud_context)
+
+    new def_ciudad
+    {
+        @"datatable*":dbr.list(@("&database"),"select sys_pk, codigo, nombre from edoprov order by nombre;",@null)
+        member "attributes"
+        {
+            @"class":"form-control"
+            @"name":"estado"
+        }
+
+        @"text_field":"nombre"
+        @"value_field":"sys_pk"
+        @"selected":@('./estado')
+    }
+    #$
+     div(class="m-0 row justify-content-center" )
+    {
+        div(class="col-lg-6")
+        {
+            p{$"#<@('error/message')>"}
+            form(action="." method="POST")
+            {
+                
+                label{"Código"}
+                input(type="text" class="form-control" name="codigo" value="#<@('./codigo')>" required="true")
+                label{"Nombre"}
+                input(type="text" class="form-control" name="nombre" value="#<@('./nombre')>" required="true")
+                label{"Código de área"}
+                input(type="text" class="form-control" name="codigotel" value="#<@('./codigotel')>" required="true")
+                label{"estado"}
+                ##
+                do uie.dbSelect(def_ciudad)
+                ##br{}
+                input(type="hidden" name="sys_recver" value="#<@('./sys_recver')>")
+                button(class="btn btn-primary m-1"){"Guardar"}
+                a(href="../" class="btn btn-danger m-1"){"Cancelar"}
+            }
+        }
+        
+    }
+    #!
+    do @context.end()
+}

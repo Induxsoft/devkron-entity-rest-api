@@ -1,0 +1,33 @@
+#include "dkli.dkh"
+
+#!
+module "form_view_tipo_cliente.dk"
+{
+	#include "functions.dkh"
+	#include "serialize.dkh"
+    #include "dbr.dkh"
+    #include "uielements.dkl"
+
+    do @context.begin(@crud_context)
+
+    #$
+    div
+    {
+        div(class="alert aler-danger"){$"#<@('error/message')>"}
+        form(action="." method="POST")
+        {
+            label{"Código:"}
+            input(type="text" name="codigo" class="form-control" value="#<@('./codigo')>" required="true")
+            label{"Descripción:"}
+            input(type="text" name="descripcion" class="form-control" value="#<@('./descripcion')>" required="true")
+            label{"Notas:"}
+            textarea(name="notas" class="form-control" value="#<@('./notas')>"){$'#<@("./notas")>'}
+            input(type="hidden" name="sys_recver" value="#<@('./sys_recver')>")
+            button(class="btn btn-primary m-1"){"Guardar"}
+            a(href="../" class="btn btn-danger m-1"){"Cancelar"}
+        }
+    }
+
+    #!
+    do @context.end()
+}

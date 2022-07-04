@@ -1,0 +1,18 @@
+#include "dkli.dkh"
+#!
+
+module "banco.dk"
+{
+    @list_query="select b.sys_pk, b.sys_recver, b.nombre, concat(c.nombre,' ',c.apellidos) as contacto from banco b 
+    inner join contacto c on b.contacto = c.sys_pk;"
+
+	@read_query="select #<@sys_fields>, nombre,contacto,website,notas from #<@table_name> where #<@keyfield>=@_entity_id limit 1;"
+
+	banco.read::&db,&params
+	{
+		ref banco=entity.read(db,params)
+		return banco
+	}
+
+	point @read to banco.read
+}

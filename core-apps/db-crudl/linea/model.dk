@@ -1,0 +1,9 @@
+#include "dkli.dkh"
+#!
+
+module "linea.dk"
+{
+    @list_query="select linea.sys_pk, linea.sys_recver, linea.codigo, linea.descripcion,linea.visible, cclaseproducto.const cclaseproducto from linea inner join cclaseproducto on clase=cclaseproducto.id where clase=@cclaseproducto or isnull(@cclaseproducto) order by codigo;"
+    @read_query="select #<@sys_fields>, codigo,descripcion,notas,comision1,comision2,comision3,comision4,comision5,visible from #<@table_name> where #<@keyfield>=@_entity_id limit 1;"
+   
+}
