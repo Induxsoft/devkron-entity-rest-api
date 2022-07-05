@@ -145,7 +145,7 @@ module "form_agente.dk"
                                                 
                             div(class="text-center pt-4")
                             {
-                                button(onclick="addagente()" class="btn btn-primary m-1"){"Guardar"}
+                                button(onclick="addagente();validacion(e)" class="btn btn-primary m-1"){"Guardar"}
                                 a(class="btn btn-danger m-1" href="../" ){"Cancelar"}
                             }
                     }

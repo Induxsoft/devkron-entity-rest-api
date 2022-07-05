@@ -1,0 +1,42 @@
+#include "dkli.dkh"
+#!
+module "solicitudes"{
+    
+    @list_query="select sys_pk, sys_guid, sys_recver, sys_timestamp, sys_dtcreated, sys_deleted,
+    emisor_nombre, receptor_nombre, asunto, cuerpo, creacion
+    from gs_solicitud;"
+
+    @read_query = "select sys_pk, sys_guid, sys_recver, sys_timestamp, sys_dtcreated, sys_deleted, 
+    referencia, creacion, inicio_previsto, inicio_real, cierre_previsto, cierre_real, emisor, receptor, emisor_nombre, receptor_nombre, asunto, cuerpo, tipo, color, status, progreso, req_aceptacion, req_aprobacion, receptor_pausar, receptor_progreso
+    from gs_solicitud where #<@keyfield>=@_entity_id limit 1;"
+
+    solicitudes.read::&db,&params{
+        ref solicitudes=entity.read(db,params)
+        
+        return solicitudes
+    }
+    solicitudes.create::&db,&params,&data{
+        
+    	@use_transaction=@false
+    	do dbr.begin(db) 
+
+	    ref res= entity.create(db,params,data)
+    	do dbr.commit(db)
+
+    	return res
+    	exception
+    	{
+    		if dbr.in_transaction(db) { do dbr.rollback(db) }
+    		do rise_error(500,last_error())
+    	}
+    }
+
+    solicitudes.update::&db,&params,&data
+    {
+        return entity.update(db,params,data)
+    }
+
+    point @read to solicitudes.read
+    point @create to solicitudes.create
+    point @update to solicitudes.update
+}

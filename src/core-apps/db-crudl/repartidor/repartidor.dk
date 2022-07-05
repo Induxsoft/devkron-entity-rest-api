@@ -37,6 +37,7 @@ script{
                 "codigo":$("#codigo").val(),
                 "nombre":$("#nombre").val(),
                 "email":$("#email").val(),
+				"notas":$("#notas").val(),
 				// "sys_pk":$("#sys_pk").val(),
                 domicilio:{
 					sys_recver:$("#sys_recver_Dom").val(),

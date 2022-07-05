@@ -19,8 +19,20 @@ script{
                         alert(p.responseJSON.message);
                     });
         }
+		
+		const validacion = (e) => {
+			e.preventDefault();
+			const name = document.getElementById("#nombre");
+			
+			if (name.value === "") {
+				alert("Porfavor introduzca un nombre");
+				name.focus();
+				return false;
+			}			
+			return true;
+		}
 
-        function AddRepartidor()
+        function addagente()
 		{
 			if ($("#codnomina").val().trim() == ""){
     			var codnomina = null;
@@ -29,7 +41,7 @@ script{
 			}
 
 
-			var repartidor={
+			var agente={
 				"sys_recver":$("#sys_recver").val(),
 			
 				//"codnomina":$("#codnomina").val(),
@@ -37,6 +49,8 @@ script{
                 "codigo":$("#codigo").val(),
                 "nombre":$("#nombre").val(),
                 "email":$("#email").val(),
+                "telefono":$("#telefono1").val(),
+                "pcomision":$("#pcomision").val(),
 				"notas":$("#notas").val(),
 				// "sys_pk":$("#sys_pk").val(),
                 domicilio:{
@@ -52,10 +66,10 @@ script{
 			var mthd="";
 			if(Number($("#sys_pk").val())>0){mthd="PUT";}
 			else{mthd="POST";}
-			definitive.rest(".",mthd,repartidor,
+			definitive.rest(".",mthd,agente,
 					function(entity){
 						//Operación exitosa
-						window.location.href = "http://api.erp.test/MaxiComercio.R5/pruebaIndux/repartidor/";
+						window.location.href = "http://api.erp.test/MaxiComercio.R5/BdR8_MXCR5/agente/";
 						
 					},
 					function(error){
@@ -70,11 +84,5 @@ script{
 						alert(p.responseJSON.message);
 					});
 		}
-
-
-
-
-
-
     '
 }

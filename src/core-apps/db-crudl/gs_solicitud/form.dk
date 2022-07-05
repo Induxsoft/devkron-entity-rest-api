@@ -1,0 +1,112 @@
+#include "dkli.dkh"
+#!
+
+module "form.dk"
+{
+    #include "functions.dkh"
+    #include "serialize.dkh"
+    #include "dbr.dkh"
+    #include "uielements.dkl"
+
+    do @context.begin(@crud_context)
+
+    new def_status
+    {
+        @"datatable*":dbr.list(@("&database"), "select id, const from gs_status_solicitud", @null)
+        member "attributes"
+        {
+            @"name":"status"
+        }
+        @"text_field":"const"
+        @"value_field":"id"
+        @"selected":@('./status')
+    }
+    new def_tipo
+    {
+        @"datatable*":dbr.list(@("&database"), "select sys_pk, codigo, descripcion from gs_tipo_solicitud", @null)
+        member "attributes"
+        {
+            @"name":"tipo"
+        }
+        @"text_field":"descripcion"
+        @"value_field":"sys_pk"
+        @"selected":@('./tipo')
+    }
+
+    #$
+    div
+    {
+        form(action="." method="POST")
+        {
+            label{"Referencia:"}
+            input(type="text" name="referencia" value="#<@('./referencia')>")
+            label{"Creación:"}
+            input(type="datetime-local" name="creacion" value="#<@('./creacion')>" required="")
+            label{"Inicio previsto:"}
+            input(type="datetime-local" name="inicio_previsto" value="#<@('./inicio_previsto')>" required="")
+            label{"Inicio real:"}
+            input(type="datetime-local" name="inicio_real" value="#<@('./inicio_real')>" required="")
+            label{"Cierre previsto:"}
+            input(type="datetime-local" name="cierre_previsto" value="#<@('./cierre_previsto')>")
+            label{"Cierre real:"}
+            input(type="datetime-local" name="cierre_real" value="#<@('./cierre_real')>")
+            label{"Emisor:"}
+            input(type="text" name="emisor" value="#<@('./emisor')>" required="")
+            label{"Nombre emisor:"}
+            input(type="text" name="emisor_nombre" value="#<@('./emisor_nombre')>" required="")
+            label{"Receptor:"}
+            input(type="text" name="receptor" value="#<@('./receptor')>")
+            label{"Nombre receptor:"}
+            input(type="text" name="receptor_nombre" value="#<@('./receptor_nombre')>")
+            label{"Asunto:"}
+            input(type="text" name="asunto" value="#<@('./asunto')>" required="")
+            label{"Cuerpo:"}
+            textarea(name="cuerpo"){$"#<@('./cuerpo')>"}
+            label{"Tipo:"}
+            #!
+            do uie.dbSelect(def_tipo)
+            #$
+            //input(type="number" name="tipo" value="#<@('./tipo')>" required="")
+            label{"Color:"}
+            input(type="number" name="color" value="#<@('./color')>")
+            label{"Status:"}
+            #!
+            do uie.dbSelect(def_status)
+            #$
+            //input(type="number" name="status" value="#<@('./status')>" required="")
+            label{"Progreso:"}
+            input(type="number" name="progreso" value="#<@('./progreso')>")
+            label{"Requiere aceptación del receptor al inicio:"}
+            #!
+            if field.dnum(@('&./'),'#req_aceptacion',-1) > 0 { #$ input(type="checkbox" name="req_aceptacion" value="1" id="req_aceptacion" checked="")}
+            else { #$ input(type="checkbox" name="req_aceptacion" id="req_aceptacion" value="0") }
+            #$
+            label{"Requiere aprobación del emisor al cierre:"}
+            #!
+            if field.dnum(@('&./'),'#req_aprobacion',-1) > 0 { #$ input(type="checkbox" name="req_aprobacion" value="1" id="req_aprobacion" checked="")}
+            else { #$ input(type="checkbox" name="req_aprobacion" id="req_aprobacion" value="0") }
+            #$
+            label{"El receptor puede pausar la solicitud:"}
+            #!
+            if field.dnum(@('&./'),'receptor_pausar', -1) > 0 { #$ input(type="checkbox" name="receptor_pausar" value="1" id="receptor_pausar" checked="")}
+            else { #$ input(type="checkbox" name="receptor_pausar" id="receptor_pausar" value="0") }
+            #$
+            label{"El receptor puede indicar el progreso de la solicitud:"}
+            #!
+            if field.dnum(@('&./'),'receptor_progreso',-1) > 0 { #$ input(type="checkbox" name="receptor_progreso" value="1" id="receptor_progreso" checked="")}
+            else { #$ input(type="checkbox" name="receptor_progreso" id="receptor_progreso" value="0") }
+
+            input(type="hidden" name="sys_pk" value="#<@('./sys_pk')>")
+            input(type="hidden" name="sys_recver" value="#<@('./sys_recver')>")
+
+            button(type="submit"){"Guardar"}
+            a(href="../"){"Cancelar"}
+
+            #!
+            #include "gs_solicitud.dkl"
+        }
+    }
+    
+    #!
+    do @context.end()
+}

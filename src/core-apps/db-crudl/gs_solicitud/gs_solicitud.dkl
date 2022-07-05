@@ -1,0 +1,41 @@
+script{
+	$'
+		function deleteEntity(sys_pk){
+			var res=confirm("¿Esta seguro de eliminar la fila?");
+			if(!res)
+				return;
+			definitive.rest("./"+sys_pk,"DELETE",null,
+				function(entity){
+					//Operación exitosa
+					window.location.reload();
+				},
+				function(error){
+					alert(error)
+					//Error de aplicación
+				},
+				function(error){
+					var er=JSON.stringify(error);
+					var p=JSON.parse(er);
+					alert(p.responseJSON.message);
+				}
+			);
+		}
+        
+        var accion = function(c){
+            if(c.checked)
+                c.value="1"
+            else
+                c.value="0"
+        }
+
+        var req_aceptacion = document.querySelector("#req_aceptacion");
+        var req_aprobacion = document.querySelector("#req_aprobacion");
+        var receptor_pausar = document.querySelector("#receptor_pausar");
+        var receptor_progreso = document.querySelector("#receptor_progreso");
+
+        req_aceptacion.addEventListener("click", e=>accion(req_aceptacion));
+        req_aprobacion.addEventListener("click", e=>accion(req_aprobacion));
+        receptor_pausar.addEventListener("click", e=>accion(receptor_pausar));
+        receptor_progreso.addEventListener("click", e=>accion(receptor_progreso));
+	'
+}

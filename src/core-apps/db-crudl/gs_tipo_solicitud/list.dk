@@ -1,0 +1,37 @@
+#include "dkli.dkh"
+#!
+
+module "list_view_gs_tipo_solicitud"
+{
+	#include "functions.dkh"
+
+    do @context.begin(@crud_context)
+
+    new @table_definition
+    {
+    	@"datatable*":@@(@crud_context,"&.")
+    	member @"columns"
+        {
+        	member @"codigo"
+        	{
+        		@"caption":"Código:"
+        	}
+        	member @"descripcion"
+        	{
+        		@"caption":"Descripción:"
+        	}
+        	member @"_actions"
+        	{
+        		@"caption":"Acción"
+        	}
+        }
+    }
+	#$
+    div(class="m-0 row justify-content-center" )
+	{
+    	#!
+    	#include "web/api.erp.test/core-apps/db-crudl/_common/list.dk"
+    }
+
+    do @context.end()
+}

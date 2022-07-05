@@ -23,7 +23,18 @@ module "form.dk"
         @"value_field":"sys_pk"
         @"selected":@('./ialmacen')
     }
-
+    // new def_precio
+    // {
+    //     @"datatable*":dbr.list(@("&database"), "select c.precio,p.precio1,p.precio2,p.precio3,p.precio4,p.precio5 from cconsumo c inner join producto p where c.precio = p.sys_Pk;", @null)
+    //     member "attributes"
+    //     {
+    //         @"class":"form-control"
+    //         @"name":"precio"
+    //     }
+    //     @"text_field":"precio1"
+    //     @"value_field":"sys_pk"
+    //     @"selected":@('./sys_pk')
+    // }
 
     ##
     div(class = "d-flex justify-content-center")
@@ -58,6 +69,9 @@ module "form.dk"
                                 {
                                     label(class="form-label"){"Precio"}
                                     input(type="number" class="form-control" name="precio" value="#<@('./precio')>")
+                                    // ##
+                                    // do uie.dbSelect(def_precio)
+                                    // ##
                                 }
                                 div(class="col-sm-6")
                                 {
