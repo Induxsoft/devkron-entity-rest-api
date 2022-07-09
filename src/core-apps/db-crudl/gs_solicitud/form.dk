@@ -9,17 +9,40 @@ module "form.dk"
     #include "uielements.dkl"
 
     do @context.begin(@crud_context)
+    
+    @isNew = ifstr(field.dstr(@('&./'),'sys_pk','')=='', 'yes', 'no')
 
-    new def_status
+    formatDateTime::date
     {
-        @"datatable*":dbr.list(@("&database"), "select id, const from gs_status_solicitud", @null)
+        if date == "" {return ""}
+        fecha = date_str(str2dt(date),"yyyy-MM-dd HH:mm:ss")
+        
+        return fecha
+    }
+    new params
+    {
+        @"uid_rec": @('http/session/user/uid')
+    }
+
+    get_users::params
+    {
+
+        return dbr.list(@("&database"), "select sys_pk, userid, username from tuser where userid != @uid_rec", params)
+    }
+
+    new def_receptores
+    {
+        @"datatable*":get_users(params)
         member "attributes"
         {
-            @"name":"status"
+            @"name":"receptor"
+            @"class":"id_receptor border-0 p-2 editable"
         }
-        @"text_field":"const"
-        @"value_field":"id"
-        @"selected":@('./status')
+        @"text_field":"username"
+        @"value_field":"userid"
+        @"first_value":" "
+		@"first_text":" "
+        @"selected":@('./receptor')
     }
     new def_tipo
     {
@@ -27,6 +50,7 @@ module "form.dk"
         member "attributes"
         {
             @"name":"tipo"
+            @"class":"w-100 form-control editable"
         }
         @"text_field":"descripcion"
         @"value_field":"sys_pk"
@@ -34,79 +58,210 @@ module "form.dk"
     }
 
     #$
-    div
+    div(class="m-0 p-0 row")
     {
-        form(action="." method="POST")
+        // Guardamos la url de la lista para regresar a ella al presionar el botón de cancelar
+        script{$' window.history.pushState({ prevUrl: document.referrer }, null, "./");'}
+        #!
+        if @('error/message') != "" { #$ div(class="alert alert-danger"){$"#<@('error/message')>"}}
+        #$
+        form(action="./#<ifstr(@isNew == 'yes', '_new', @('./sys_pk'))>" method="POST" id="form" class="p-0")
         {
-            label{"Referencia:"}
-            input(type="text" name="referencia" value="#<@('./referencia')>")
-            label{"Creación:"}
-            input(type="datetime-local" name="creacion" value="#<@('./creacion')>" required="")
-            label{"Inicio previsto:"}
-            input(type="datetime-local" name="inicio_previsto" value="#<@('./inicio_previsto')>" required="")
-            label{"Inicio real:"}
-            input(type="datetime-local" name="inicio_real" value="#<@('./inicio_real')>" required="")
-            label{"Cierre previsto:"}
-            input(type="datetime-local" name="cierre_previsto" value="#<@('./cierre_previsto')>")
-            label{"Cierre real:"}
-            input(type="datetime-local" name="cierre_real" value="#<@('./cierre_real')>")
-            label{"Emisor:"}
-            input(type="text" name="emisor" value="#<@('./emisor')>" required="")
-            label{"Nombre emisor:"}
-            input(type="text" name="emisor_nombre" value="#<@('./emisor_nombre')>" required="")
-            label{"Receptor:"}
-            input(type="text" name="receptor" value="#<@('./receptor')>")
-            label{"Nombre receptor:"}
-            input(type="text" name="receptor_nombre" value="#<@('./receptor_nombre')>")
-            label{"Asunto:"}
-            input(type="text" name="asunto" value="#<@('./asunto')>" required="")
-            label{"Cuerpo:"}
-            textarea(name="cuerpo"){$"#<@('./cuerpo')>"}
-            label{"Tipo:"}
-            #!
-            do uie.dbSelect(def_tipo)
-            #$
-            //input(type="number" name="tipo" value="#<@('./tipo')>" required="")
-            label{"Color:"}
-            input(type="number" name="color" value="#<@('./color')>")
-            label{"Status:"}
-            #!
-            do uie.dbSelect(def_status)
-            #$
-            //input(type="number" name="status" value="#<@('./status')>" required="")
-            label{"Progreso:"}
-            input(type="number" name="progreso" value="#<@('./progreso')>")
-            label{"Requiere aceptación del receptor al inicio:"}
-            #!
-            if field.dnum(@('&./'),'#req_aceptacion',-1) > 0 { #$ input(type="checkbox" name="req_aceptacion" value="1" id="req_aceptacion" checked="")}
-            else { #$ input(type="checkbox" name="req_aceptacion" id="req_aceptacion" value="0") }
-            #$
-            label{"Requiere aprobación del emisor al cierre:"}
-            #!
-            if field.dnum(@('&./'),'#req_aprobacion',-1) > 0 { #$ input(type="checkbox" name="req_aprobacion" value="1" id="req_aprobacion" checked="")}
-            else { #$ input(type="checkbox" name="req_aprobacion" id="req_aprobacion" value="0") }
-            #$
-            label{"El receptor puede pausar la solicitud:"}
-            #!
-            if field.dnum(@('&./'),'receptor_pausar', -1) > 0 { #$ input(type="checkbox" name="receptor_pausar" value="1" id="receptor_pausar" checked="")}
-            else { #$ input(type="checkbox" name="receptor_pausar" id="receptor_pausar" value="0") }
-            #$
-            label{"El receptor puede indicar el progreso de la solicitud:"}
-            #!
-            if field.dnum(@('&./'),'receptor_progreso',-1) > 0 { #$ input(type="checkbox" name="receptor_progreso" value="1" id="receptor_progreso" checked="")}
-            else { #$ input(type="checkbox" name="receptor_progreso" id="receptor_progreso" value="0") }
+            div(class="p-2 m-0 d-flex align-items-center")
+            {
+                h5(class="m-0 p-0"){$" Solicitud"}
+                div(class="controls w-100 d-flex justify-content-end")
+                {
+                    #! if @isNew == 'no' && @('./emisor') == @('http/session/user/uid')
+                    {
+                        #$button(type="button" onclick="readOnly(false)" id="modify_btn" class="btn btn-secondary btn-sm m-1"){"Modificar"}
+                        button(type="button" onclick="readOnly(true)" id="cancel_btn" class="btn btn-secondary btn-sm m-1 hidde_control"){"Cancelar"}
+                        button(type="submit" class="btn btn-primary btn-sm m-1"){"Aceptar"}
+                    }
+                    #! if @isNew == 'yes'{ #$ button(type="submit" class="btn btn-primary btn-sm m-1"){"Aceptar"}}
+                    #$
+                    button(type="button" onclick="window.location.href=window.history.state.prevUrl;" class="btn btn-light btn-sm m-1 border"){"Cerrar"}
+                }
+            }
+            
+            div(class="tab-header")
+            {
+                ul(class="nav nav-tabs bg-light d-flex" "data-bs-tabs"='tabs')
+                {
+                    
+                    li(class="nav-item")
+                    {
+                        a(class="nav-link active" "aria-current"='true' href="#header-principal" "data-bs-toggle"='tab'){$"Principal"}
+                    }
+                    li(class="nav-item")
+                    { 
+                        a(class="nav-link"  href="#header-secondary" "data-bs-toggle"='tab'){$"Progreso"}
+                    }
+                    li(class="nav-item")
+                    { 
+                        a(class="nav-link"  href="#header-more-options" "data-bs-toggle"='tab'){$"Opciones"}
+                    }
+                    div(class="colores flex-grow-1 d-flex align-items-center justify-content-end")
+                    {
+                        p(class="colores_p p-0 text-secondary m-1"){$"Colores:"}
+                        div(class="btn-group d-flex flex-wrap" id="group-colors")
+                        {
+                            button(type="button" onclick="selectColor(0,this);" style="background-color:#FFFFFF;" class="color #<ifstr(field.dstr(@('&./'),'color', '99')=='0','border border-dark','border-0')>"){$""}
+                            button(type="button" onclick="selectColor(1,this);" style="background-color:#CB8A90;" class="color #<ifstr(field.dstr(@('&./'),'color', '99')=='1','border border-dark','border-0')>"){$""}
+                            button(type="button" onclick="selectColor(2,this);" style="background-color:#83B1C9;" class="color #<ifstr(field.dstr(@('&./'),'color', '99')=='2','border border-dark','border-0')>"){$""}
+                            button(type="button" onclick="selectColor(3,this);" style="background-color:#FEF5D4;" class="color #<ifstr(field.dstr(@('&./'),'color', '99')=='3','border border-dark','border-0')>"){$""}
+                            button(type="button" onclick="selectColor(4,this);" style="background-color:#FFD6AA;" class="color #<ifstr(field.dstr(@('&./'),'color', '99')=='4','border border-dark','border-0')>"){$""}
+                            button(type="button" onclick="selectColor(5,this);" style="background-color:#B1D3C5;" class="color #<ifstr(field.dstr(@('&./'),'color', '99')=='5','border border-dark','border-0')>"){$""}
+                            button(type="button" onclick="selectColor(6,this);" style="background-color:#AFAFC7;" class="color #<ifstr(field.dstr(@('&./'),'color', '99')=='6','border border-dark','border-0')>"){$""}
+                        }
+                    }
+                }
+            }
+            div(class="tab-content")
+            {
+                // TAB 1
+                div(id="header-principal" class="tab-pane active")
+                {
+                    div(class="card-header bg-transparent d-flex flex-wrap align-items-center")
+                    {
+                        div(class="m-1 w-40")
+                        {
+                            label(class="text-secondary"){"Referencia:"}
+                            input(type="text" name="referencia" value="#<@('./referencia')>" required="" class="w-100 form-control editable")
+                        }
+                        div(class="m-1 w-50")
+                        {
+                            label(class="text-secondary"){"Tipo:"}
+                            #!
+                            do uie.dbSelect(def_tipo)
+                            #$
+                        }
+
+                        #! time_now = date_str(now(),"yyyy-MM-dd HH:mm:ss")
+                        #$
+                        
+                        div(class="m-1 w-25")
+                        {
+                            label(class="text-secondary"){"Inicio previsto:"}
+                            input(type="datetime-local" id="inicio_previsto" name="inicio_previsto" value="#<formatDateTime(@('$./inicio_previsto'))>" required="" class="w-100 form-control editable")
+                        }
+                        div(class="m-1 w-25")
+                        {
+                            label(class="text-secondary"){"Cierre previsto:"}
+                            input(type="datetime-local" name="cierre_previsto" value="#<formatDateTime(@('$./cierre_previsto'))>" class="w-100 form-control editable")
+                        }
+                        input(type="hidden" name="creacion" value="#<time_now>")
+
+                        //label{"Emisor:"}
+                        input(type="hidden" name="emisor" value="#<@('http/session/user/uid')>")
+                        //label{"Nombre emisor:"}
+                        input(type="hidden" name="emisor_nombre" value="#<@('http/session/user/name')>")
+                    }
+                }
+
+                // TAB 2
+                div(id="header-secondary" class="tab-pane")
+                {
+                    div(class="card-header bg-transparent d-flex flex-wrap align-items-center")
+                    {
+                        div(class="m-1 w-25")
+                        {
+                            label(class="text-secondary"){"Inicio real:"}
+                            input(type="datetime-local" id="inicio_real" name="inicio_real" value="#<formatDateTime(@('$./inicio_real'))>" class="w-100 form-control" readonly="")
+                        }
+                        div(class="m-1 w-25")
+                        {
+                            label(class="text-secondary"){"Cierre real:"}
+                            input(type="datetime-local" name="cierre_real" value="#<formatDateTime(@('$./cierre_real'))>" class="w-100 form-control" readonly="")
+                        }
+                        input(type="hidden" id="color" name="color" value="#<field.dnum(@('&./'),'color',0)>")
+                        // div(class="m-1 w-25")
+                        // {
+                        //     label(class="text-secondary"){"Color:"}
+                            
+                        // }
+                        div(class="m-1 w-100")
+                        {
+                            label(class="text-secondary")
+                            {
+                                $"Progreso: "
+                                span(id="progress_value" value="#<field.dnum(@('&./'),'progreso',0.00)>"){$"#<field.dnum(@('&./'),'progreso',0.00)>"}
+                            }
+                            input(type="range" id="progress_range" min="0" max="100" step="10.00" name="progreso" value="#<field.dnum(@('&./'),'progreso',0.00)>" class="w-100 form-range editable")
+                        } 
+                    }
+                }
+
+                // TAB 3
+                div(id="header-more-options" class="tab-pane")
+                {
+                    div(class="card-header bg-transparent d-flex flex-wrap align-items-center")
+                    {
+                        div(class="m-1 w-100")
+                        {
+                            input(type="hidden" name="req_aceptacion" id="req_aceptacion_h" "value"="#<ifstr(field.dnum(@('&./'),'req_aceptacion', 0)==1,'1','0')>")
+                            input(type="checkbox" id="req_aceptacion" "#<ifstr(field.dnum(@('&./'),'req_aceptacion', 0)==1,'checked','')>"="true" class="editable")
+                            span{$" "}label{"Requiere aceptación del receptor al inicio."}
+                        }
+                        div(class="m-1 w-100")
+                        {
+                            input(type="hidden" name="req_aprobacion" id="req_aprobacion_h" "value"="#<ifstr(field.dnum(@('&./'),'req_aprobacion', 0)==1,'1','0')>")
+                            input(type="checkbox" id="req_aprobacion" "#<ifstr(field.dnum(@('&./'),'req_aprobacion', 0)==1,'checked','')>"="true" class="editable")
+                            span{$" "}label{" Requiere aprobación del emisor al cierre."}
+                        }
+                        div(class="m-1 w-100")
+                        {
+                            input(type="hidden" name="receptor_pausar" id="receptor_pausar_h" "value"="#<ifstr(field.dnum(@('&./'),'receptor_pausar', 0)==1,'1','0')>")
+                            input(type="checkbox" id="receptor_pausar" "#<ifstr(field.dnum(@('&./'),'receptor_pausar', 0)==1,'checked','')>"="true" class="editable")
+                            span{$" "}label{" El receptor puede pausar la solicitud."}
+                        }
+                        div(class="m-1 w-100")
+                        {
+                            input(type="hidden" name="receptor_progreso" id="receptor_progreso_h" "value"="#<ifstr(field.dnum(@('&./'),'receptor_progreso', 0)==1,'1','0')>")
+                            input(type="checkbox" id="receptor_progreso" "#<ifstr(field.dnum(@('&./'),'receptor_progreso', 0)==1,'checked','')>"="true" class="editable")
+                            span{$" "}label{" El receptor puede indicar el progreso de la solicitud."}
+                        }
+                    }
+                }
+            }
+            div(class="card p-3")
+            {
+                h6(class="text-secondary text-right"){"De: #<@('http/session/user/name')>"}
+                
+                div(class="card border-0 mt-2")
+                {
+                    label(class="text-secondary"){"Para:"}
+                    #!
+                    do uie.dbSelect(def_receptores)
+                    #$
+                    input(type="hidden" id="receptor_nombre" name="receptor_nombre" value="#<@('./receptor_nombre')>")
+                    hr(class="m-1"){$""}
+                }
+                div(class="card border-0")
+                {
+                    input(type="text" name="asunto" value="#<@('./asunto')>" required="" placeholder="Asunto:" class="border-0 p-2 editable")
+                    hr(class="m-1"){$""}
+                }
+                div(class="card border-0")
+                {
+                    textarea(name="cuerpo" class="border-0 p-2 editable" rows="8"){$"#<@('./cuerpo')>"}
+                }
+            }
 
             input(type="hidden" name="sys_pk" value="#<@('./sys_pk')>")
             input(type="hidden" name="sys_recver" value="#<@('./sys_recver')>")
 
-            button(type="submit"){"Guardar"}
-            a(href="../"){"Cancelar"}
-
             #!
+            #include "style_gs_solicitud.dkl"
             #include "gs_solicitud.dkl"
+
+            rOnly = @true
+            if @isNew == 'yes'{rOnly = @false}
+            #$
+            script{"readOnly(#<rOnly>);"}
         }
     }
-    
+
     #!
     do @context.end()
 }

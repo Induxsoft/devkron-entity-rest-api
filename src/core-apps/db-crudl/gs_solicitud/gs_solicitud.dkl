@@ -21,11 +21,11 @@ script{
 			);
 		}
         
-        var accion = function(c){
+        var accion = function(c,h){
             if(c.checked)
-                c.value="1"
+                h.value="1"
             else
-                c.value="0"
+                h.value="0"
         }
 
         var req_aceptacion = document.querySelector("#req_aceptacion");
@@ -33,9 +33,198 @@ script{
         var receptor_pausar = document.querySelector("#receptor_pausar");
         var receptor_progreso = document.querySelector("#receptor_progreso");
 
-        req_aceptacion.addEventListener("click", e=>accion(req_aceptacion));
-        req_aprobacion.addEventListener("click", e=>accion(req_aprobacion));
-        receptor_pausar.addEventListener("click", e=>accion(receptor_pausar));
-        receptor_progreso.addEventListener("click", e=>accion(receptor_progreso));
+		var req_aceptacion_h = document.querySelector("#req_aceptacion_h");
+        var req_aprobacion_h = document.querySelector("#req_aprobacion_h");
+        var receptor_pausar_h = document.querySelector("#receptor_pausar_h");
+        var receptor_progreso_h = document.querySelector("#receptor_progreso_h");
+
+        if(req_aceptacion)req_aceptacion.addEventListener("click", e=>accion(req_aceptacion,req_aceptacion_h));
+        if(req_aprobacion)req_aprobacion.addEventListener("click", e=>accion(req_aprobacion,req_aprobacion_h));
+        if(receptor_pausar)receptor_pausar.addEventListener("click", e=>accion(receptor_pausar,receptor_pausar_h));
+        if(receptor_progreso)receptor_progreso.addEventListener("click", e=>accion(receptor_progreso,receptor_progreso_h));
+
+		function prueba(data)
+		{
+			console.log("vamos a ver si estp funciona" + data);
+			return "vamos a ver si estp funciona" + data;
+		}
+
+		var uid_recept = document.querySelector(".id_receptor");
+		if(uid_recept) uid_recept.addEventListener("change", e=> {
+			$("#receptor_nombre").val(uid_recept.options[uid_recept.selectedIndex].text);
+		});
+
+		var ini_prev = document.querySelector("#inicio_previsto");
+		if(ini_prev) ini_prev,addEventListener("change", e => {
+			$("#inicio_real").val(ini_prev.value);
+		});
+
+		function refreshTable(filtro)
+		{
+			window.location.href="./?filter="+filtro;
+		}
+
+		var add_sol_modal = document.querySelector(".add_sol_modal");
+		var add_sol_modal_btn = document.querySelector("#add_sol_btn");
+
+		if(add_sol_modal_btn) add_sol_modal_btn.addEventListener("click", e=>{
+			loadModal();
+		});
+
+		function close_modal()
+		{
+			if(add_sol_modal)add_sol_modal.classList.toggle("hidde_control");
+		}
+		function edit_sol(pk)
+		{
+			window.location.href="./"+pk;
+		}
+
+		var filter_tabs = document.querySelector("#filter-tabs");
+		
+		function focus_filter(btn)
+		{
+			if(filter_tabs) filter_tabs.childNodes.forEach(b=>{
+				b.style.border = "none"
+				b.style.borderBottom = "4px solid transparent"
+			});
+
+			$("#"+btn).css("border-bottom","4px solid #dc3545");
+		}
+
+		$("#progress_range").change(e=>{
+			$("#progress_value").text($("#progress_range").val());
+		});
+		
+		var input_file = document.querySelector("#input_file");
+
+		if(input_file) input_file.addEventListener("change", e => {
+			
+			let files = input_file.files;
+			if(files.length < 1)
+				return;
+
+			invoqueUpFiles(new FormData(document.getElementById("formUpFile")), function(data)
+			{
+				let res = Object.keys(data);
+	
+				for(var i=0; i<res.length; i++){
+					let r = res[i];
+	
+					if(!data[r].done)
+						alert(r + " no se pudo subir. " + data[r].message);
+				}
+			},
+			function(message){
+				alert("Ha ocurrido un error al realizar la operación. "+message);
+			});
+		});
+
+		function up_file()
+		{
+			if(input_file) input_file.click();
+		}
+		
+		function loadModal()
+		{
+			invoque(function(data){
+				$(".add_sol_modal").html(data);
+			},
+			function(data){
+				console.log("error " + data);
+			});
+		}
+
+		function invoque(succes, fail)
+		{
+			$.ajax({
+			type: "GET",
+			url: "./_new/?_output=raw",
+			data:"",
+			dataType: "html",
+			processData: false,
+			success: function(r){
+				succes(r);
+			},
+			error: function(r){
+				alert("Ocurrió un error al invocar el servicio.");
+			}
+		});
+		}
+
+		function invoqueUpFiles(formData,callback_success, callback_fail)
+		{
+			$.ajax({
+				type: "POST",
+				url: "./up_file.service",
+				data: formData,
+				cache:false,
+				contentType: false,
+				processData: false, 
+			
+				success: function(r){
+					var res = JSON.parse(JSON.stringify(r));
+					if (res.success)
+					{
+						if (callback_success)
+							callback_success(res.data);
+					}
+					else
+					{
+						if (callback_fail)
+							callback_fail(res.message);
+					}
+				},
+				error: function(r){
+					alert("Ocurrió un error al invocar el servicio." + JSON.stringify(r));
+				}
+
+			}).always(function(){
+				location.reload();
+			});
+		}
+
+		var modify_btn = document.querySelector("#modify_btn");
+		var cancel_btn = document.querySelector("#cancel_btn");
+
+		if (modify_btn) modify_btn.addEventListener("click", e => {
+			cancel_btn.classList.remove("hidde_control");
+			cancel_btn.classList.add("show_control");
+			modify_btn.classList.remove("show_control");
+			modify_btn.classList.add("hidde_control");
+		});
+
+		if(cancel_btn) cancel_btn.addEventListener("click", e => {
+			cancel_btn.classList.remove("show_control");
+			cancel_btn.classList.add("hidde_control");
+			modify_btn.classList.remove("hidde_control");
+			modify_btn.classList.add("show_control");
+		});
+
+		var inputEditables = document.querySelectorAll(".editable");
+		function readOnly(val)
+		{
+			inputEditables.forEach(e => {
+				e.readOnly = val;
+
+				if(val) e.setAttribute("disabled","disabled")
+				else e.removeAttribute("disabled");
+
+			});
+		}
+
+		function selectColor(n, btnSelected)
+		{
+			$("#color").val(n);
+
+			var group_colors = document.querySelector("#group-colors");
+			group_colors.childNodes.forEach( b => {
+				b.classList.remove("conBorde");
+				b.classList.add("sinBorde");
+			});
+
+			btnSelected.classList.remove("sinBorde");
+			btnSelected.classList.add("conBorde");
+		}
 	'
 }

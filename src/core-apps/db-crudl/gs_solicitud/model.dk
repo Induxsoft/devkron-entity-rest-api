@@ -1,10 +1,25 @@
 #include "dkli.dkh"
 #!
 module "solicitudes"{
+
+    #include "config.dk"
+
+    @status_borrador = 0
+    @status_Asignada = 10
+    @status_Iniciada = 11
+    @status_En_pausa = 20
+    @status_Terminada = 30
+    @status_Aprobada = 50
+    @status_cancelada = 90
+    @status_Rechazada = 91
+
+    user_id = @@(@http_context,'session/user/uid')
     
-    @list_query="select sys_pk, sys_guid, sys_recver, sys_timestamp, sys_dtcreated, sys_deleted,
-    emisor_nombre, receptor_nombre, asunto, cuerpo, creacion
-    from gs_solicitud;"
+    @list_query="select sol.sys_pk, sol.sys_guid, sol.sys_recver, sol.sys_timestamp, sol.sys_dtcreated, sol.sys_deleted,
+    sol.emisor, sol.emisor_nombre, sol.receptor, sol.receptor_nombre, sol.asunto, sol.cuerpo, ifnull(DATE_FORMAT(sol.creacion, '%Y-%m-%d'),'') as creacion, ifnull(DATE_FORMAT(sol.inicio_previsto,'%Y-%m-%d'),'') as inicio_previsto, ifnull(DATE_FORMAT(sol.cierre_previsto,'%Y-%m-%d'),'') as cierre_previsto, stat.const as estado
+    from gs_solicitud sol
+    inner join gs_status_solicitud stat on sol.status = stat.id
+    where if(@filter='recibidas',if(sol.receptor ='"+user_id+"',1,0), if(@filter='enviadas',if(sol.emisor = '"+user_id+"' and sol.receptor!='',1,0),if(@filter='borradores',if(sol.emisor = '"+user_id+"' AND trim(sol.receptor)='' AND sol.status="+str(@status_borrador)+",1,0),if(sol.receptor = '"+user_id+"',1,0))))=1;"
 
     @read_query = "select sys_pk, sys_guid, sys_recver, sys_timestamp, sys_dtcreated, sys_deleted, 
     referencia, creacion, inicio_previsto, inicio_real, cierre_previsto, cierre_real, emisor, receptor, emisor_nombre, receptor_nombre, asunto, cuerpo, tipo, color, status, progreso, req_aceptacion, req_aprobacion, receptor_pausar, receptor_progreso
@@ -18,10 +33,23 @@ module "solicitudes"{
     solicitudes.create::&db,&params,&data{
         
     	@use_transaction=@false
-    	do dbr.begin(db) 
+    	do dbr.begin(db)
+
+        if field.dstr(data,"cierre_previsto","") == "" {do field.remove(data,"cierre_previsto")}
+        if field.dstr(data,"cierre_real","") == "" {do field.remove(data,"cierre_real")}
+        //do rise_error(888, to.json(data))
+        if field.dstr(data,"receptor","") != ""
+        {                 
+            if field.dstr(data,"req_aceptacion","0") == "1" { data<"status"> : @status_Asignada }
+            else { data<"status"> : @status_Iniciada }
+        }
+        else { data<"status"> : @status_borrador }
 
 	    ref res= entity.create(db,params,data)
     	do dbr.commit(db)
+
+        //crear carpeta
+        do dir.ensure(path.concat(path.concat(@gs_base_path, "solicitudes"),@@(res,"sys_guid")))
 
     	return res
     	exception
@@ -33,8 +61,13 @@ module "solicitudes"{
 
     solicitudes.update::&db,&params,&data
     {
+        if field.dstr(data,"cierre_previsto","") == "" {do field.remove(data,"cierre_previsto")}
+        if field.dstr(data,"cierre_real","") == "" {do field.remove(data,"cierre_real")}
+
         return entity.update(db,params,data)
     }
+
+    
 
     point @read to solicitudes.read
     point @create to solicitudes.create

@@ -1,0 +1,9 @@
+#include "dkli.dkh"
+#!
+program
+{
+    #include "functions.dkh"
+
+    @gs_base_path = "web/api.erp.test/core-apps/db-crudl/gs_solicitud"
+    @gs_temp_path = path.concat(@gs_base_path,"temp")
+}

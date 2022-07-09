@@ -4,46 +4,172 @@
 module "list_view_solicitudes"
 {
 	#include "functions.dkh"
+	#include "serialize.dkh"
+	#include "dbr.dkh"
+    #include "uielements.dkl"
+	#include "config.dk"
 
     do @context.begin(@crud_context)
 
-    new @table_definition
-    {
-    	@"datatable*":@@(@crud_context,"&.")
-    	member @"columns"
-        {
-        	member @"emisor_nombre"
-        	{
-        		@"caption":"De:"
-        	}
-        	member @"receptor_nombre"
-        	{
-        		@"caption":"Para:"
-        	}
-			member @"asunto"
-			{
-				@"caption":"Asunto:"
-			}
-            member @"cuerpo"
-			{
-				@"caption":"Descripción:"
-			}
-            member @"creacion"
-			{
-				@"caption":"Creación:"
-			}
-        	member @"_actions"
-        	{
-        		@"caption":"Acción"
-        	}
-        }
-    }
-	#$
-    div(class="m-0 row justify-content-center" )
-	{
-    	#!
-    	#include "web/api.erp.test/core-apps/db-crudl/_common/list.dk"
-    }
+	ref @solicitudes = @("&./")
+	
+	@user_id = @('http/session/user/uid')
+	@titles = "De,Asunto,Estado,Creacion,Inicio,Cierre"
+	@fields = "emisor_nombre,asunto,estado,creacion,inicio_previsto,cierre_previsto"
 
+
+	//============ FUNCIONES GENERALES
+	formatDateTime::date
+	{
+		if date == "" {return ""}
+		fecha = date_str(str2dt(date),"yyyy-MM-dd HH:mm:ss")
+		
+		return fecha
+	}
+	new params
+	{
+		@"uid_rec": @('http/session/user/uid')
+	}
+	new def_receptores
+	{
+		@"datatable*":dbr.list(@("&database"), "select sys_pk, userid, username from tuser where userid != @uid_rec", params)
+		member "attributes"
+		{
+			@"name":"receptor"
+			@"class":"id_receptor border-0 p-2"
+		}
+		@"text_field":"username"
+		@"value_field":"userid"
+		@"selected":@('./receptor')
+		@"first_value":" "
+		@"first_text":" "
+	}
+	new def_tipo
+	{
+		@"datatable*":dbr.list(@("&database"), "select sys_pk, codigo, descripcion from gs_tipo_solicitud", @null)
+		member "attributes"
+		{
+			@"name":"tipo"
+			@"class":"w-100"
+		}
+		@"text_field":"descripcion"
+		@"value_field":"sys_pk"
+		@"selected":@('./tipo')
+	}
+
+	
+	//============ TABLA DE SOLICITUDES
+	printTable::
+	{
+		#$
+		table(class="table tab-pane" id="sol_table")
+		{
+			tbody
+			{
+				#!
+				for i=0; i<@count(@solicitudes)
+				{
+					ref sol = @item(@solicitudes, i)
+					#$
+					tr(onclick="edit_sol('#<@@(sol,'sys_pk')>')")
+					{
+						#!
+						ref filed_list = split(@fields,",")
+						ref title_list = split(@titles,",")
+
+						for j=0; j<list.count(filed_list)
+						{
+							field = list.str(filed_list,j)
+							title = list.str(title_list,j)
+
+							#$ td(title="#<title>"){$"#<@@(sol,field)>"}
+						}
+					}	
+				}
+			}
+		}
+	}
+	#!
+	
+	
+	#$
+	div(class="m-0 row justify-content-center")
+	{
+		//============ CUERPO DE LA PÁGINA
+		#$
+		div(class="mt-4")
+		{
+			button(id="add_sol_btn" class="btn btn-light shadow-sm p-2 mb-2 bg-white")
+			{
+				svg(xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="#dc3545" class="bi bi-plus text-primary" viewBox="0 0 16 16"){path(d="M8 4a.5.5 0 0 1 .5.5v3h3a.5.5 0 0 1 0 1h-3v3a.5.5 0 0 1-1 0v-3h-3a.5.5 0 0 1 0-1h3v-3A.5.5 0 0 1 8 4z")}
+				$"Agregar"
+			}
+			//============ MODAL PARA CREAR SOLICITUD
+			div(class="add_sol_modal row p-0 border-0")
+			{
+				$""
+				form(enctype="multipart/form-data" method="POST" id="formUpFile" class="m-0 p-0")
+				{
+					input(type="file" id="input_file" name="fileuploader" style="display:none" multiple="" class="m-0 p-0"){}
+				}
+			}
+			//============ SECCIONES (RECIBIDOS, ENVIADOS Y BORRADORES)
+			div(class="")
+			{
+				p{$"#<@('error/message')>"}
+				hr(class="m-0 p-0 text-muted"){$""}
+				div(class="bg-transparent p-0 m-0" id="filter-tabs")
+				{
+					button(class="btn-lg boton-nav p-3" id="recibidas" onclick="refreshTable('recibidas');")
+					{
+						svg(xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor" class="bi bi-inbox-fill" viewBox="0 0 16 16"){path(d="M4.98 4a.5.5 0 0 0-.39.188L1.54 8H6a.5.5 0 0 1 .5.5 1.5 1.5 0 1 0 3 0A.5.5 0 0 1 10 8h4.46l-3.05-3.812A.5.5 0 0 0 11.02 4H4.98zm-1.17-.437A1.5 1.5 0 0 1 4.98 3h6.04a1.5 1.5 0 0 1 1.17.563l3.7 4.625a.5.5 0 0 1 .106.374l-.39 3.124A1.5 1.5 0 0 1 14.117 13H1.883a1.5 1.5 0 0 1-1.489-1.314l-.39-3.124a.5.5 0 0 1 .106-.374l3.7-4.625z")}
+						small{$" Recibidos"}
+					}
+					button(class="btn-lg boton-nav p-3" id="enviadas" onclick="refreshTable('enviadas');")
+					{
+						svg(xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor" class="bi bi-send-fill" viewBox="0 0 16 16"){path(d="M15.964.686a.5.5 0 0 0-.65-.65L.767 5.855H.766l-.452.18a.5.5 0 0 0-.082.887l.41.26.001.002 4.995 3.178 3.178 4.995.002.002.26.41a.5.5 0 0 0 .886-.083l6-15Zm-1.833 1.89L6.637 10.07l-.215-.338a.5.5 0 0 0-.154-.154l-.338-.215 7.494-7.494 1.178-.471-.47 1.178Z")}
+						small{$" Enviados"}
+					}
+					button(class="btn-lg boton-nav p-3" id="borradores" onclick="refreshTable('borradores');")
+					{
+						svg(xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor" class="bi bi-eraser-fill" viewBox="0 0 16 16"){path(d="M8.086 2.207a2 2 0 0 1 2.828 0l3.879 3.879a2 2 0 0 1 0 2.828l-5.5 5.5A2 2 0 0 1 7.879 15H5.12a2 2 0 0 1-1.414-.586l-2.5-2.5a2 2 0 0 1 0-2.828l6.879-6.879zm.66 11.34L3.453 8.254 1.914 9.793a1 1 0 0 0 0 1.414l2.5 2.5a1 1 0 0 0 .707.293H7.88a1 1 0 0 0 .707-.293l.16-.16z")}
+						small{$" Borradores"}
+					}
+				}
+				hr(class="m-0 p-0 text-muted"){$""}
+				//============ LISTA DE SOLICITUDES
+				div(class="")
+				{
+					#!
+					do printTable()
+				}
+			}
+			#!
+			#include "gs_solicitud.dkl"
+		}
+
+
+		#!
+		//============ JS
+		#include "gs_solicitud.dkl"	
+		//============ CSS
+		#include "style_gs_solicitud.dkl"
+
+		filter_selected = @("parameters/filter")
+		if filter_selected != ""
+		{
+			#$
+			script{$"focus_filter('#<filter_selected>');"}
+			#!
+		}
+		else
+		{
+			#$
+			script{$"focus_filter('recibidas');"} // recibidas por defecto
+		}
+		
+	}
+
+	#!
     do @context.end()
 }

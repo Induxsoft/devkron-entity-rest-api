@@ -1,0 +1,30 @@
+#include "dkli.dkh"
+#!
+program
+{
+    #include "functions.dkh"
+    #include "dbr.dkh"
+    #include "serialize.dkh"
+
+    #include "config.dk"
+    
+    new res { @"success": @true }
+    ref files=field.obj(@http_context,"request/files")
+    uuid=uuid()
+    do file.wtext("./log.txt", to.json(files))
+    for i=0;i<list.count(files)
+    {
+        ref f=list.obj(files,i)
+        do file.copy(field.str(f,"temp_file"),path.concat(@gs_temp_path,uuid+".temp"))
+    }
+
+    exception
+    {
+        res<"message">:last_error()
+        res<"success">:@false
+    }
+
+    @http_context<"response/headers/Content-Type">:"application/json;charset=utf-8"
+    @http_context<"response/output">:"text"
+    @http_context<"response/text">: to.json(res)
+}
